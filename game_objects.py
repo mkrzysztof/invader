@@ -7,6 +7,7 @@ random.seed()
 
 ALIENMOVE = pygame.event.custom_type()
 MISSILLEMOVE = pygame.event.custom_type()
+FIRE = pygame.event.custom_type()
 
 
 class Ship():
@@ -90,7 +91,6 @@ class Alien():
         self.screen = screen
         self.current_frame = pygame.image.load(path)
         self.posx, self.posy = position
-        self._tick = 0
         self._position = position
         self.show = True
         self.dx = random.choice((-2, 2))
@@ -99,7 +99,6 @@ class Alien():
         pos_x_start, _ = self._position
         if event.type == ALIENMOVE:
             self.posx += self.dx
-            self._tick = 0
             if self.posx == pos_x_start + 10 or self.posx == pos_x_start - 10:
                 self.dx = -self.dx
 
