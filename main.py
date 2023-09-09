@@ -2,6 +2,8 @@ from pathlib import Path
 import pygame
 import game_objects
 
+ALLOWFIRE = pygame.event.custom_type()
+
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
@@ -9,6 +11,7 @@ if __name__ == '__main__':
     
     pygame.time.set_timer(game_objects.ALIENMOVE, 100)
     pygame.time.set_timer(game_objects.MISSILLEMOVE, 20)
+    pygame.time.set_timer(ALLOWFIRE, 1000)
     pygame.event.set_allowed([pygame.KEYDOWN, game_objects.ALIENMOVE,
                               pygame.QUIT])
     pygame.event.set_blocked([pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP,
@@ -24,6 +27,7 @@ if __name__ == '__main__':
     mov_ship = game_objects.Ship(screen)
     pygame.key.set_repeat(100)
     bullets = set()
+    allow_fire = False
     while running:
         screen.fill('black')
         events = pygame.event.get()
@@ -34,11 +38,14 @@ if __name__ == '__main__':
             run_objects.extend(aliens)
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == ALLOWFIRE:
+                allow_fire = True
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and allow_fire:
                     bullet = game_objects.Missile(screen, mov_ship, aliens)
                     bullet.fire()
                     bullets.add(bullet)
+                    allow_fire = False
             run_objects.extend(bullets)
             for obj in run_objects:
                 obj.move(event)
@@ -47,7 +54,7 @@ if __name__ == '__main__':
             obj.draw()
         end_bullets = {b for b in bullets if not b.bang}
         bullets = bullets - end_bullets
-        clock.tick(20)
+        # clock.tick(2000)
         pygame.display.flip()
         pygame.time.delay(10)
     

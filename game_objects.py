@@ -7,7 +7,6 @@ random.seed()
 
 ALIENMOVE = pygame.event.custom_type()
 MISSILLEMOVE = pygame.event.custom_type()
-FIRE = pygame.event.custom_type()
 
 
 class Ship():
@@ -93,13 +92,13 @@ class Alien():
         self.posx, self.posy = position
         self._position = position
         self.show = True
-        self.dx = random.choice((-2, 2))
+        self.dx = random.choice((-2, 2, -3, 3, -4, 4))
 
     def move(self, event):
         pos_x_start, _ = self._position
         if event.type == ALIENMOVE:
             self.posx += self.dx
-            if self.posx == pos_x_start + 10 or self.posx == pos_x_start - 10:
+            if self.posx >= pos_x_start + 10 or self.posx <= pos_x_start - 10:
                 self.dx = -self.dx
 
     def draw(self):
