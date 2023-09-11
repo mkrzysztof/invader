@@ -64,13 +64,8 @@ class Missile():
     def move(self, event):
         if self.bang:
             if event.type == MISSILLEMOVE:
-<<<<<<< HEAD
-                self.posy -= self._dy
-        if self.posy <= 0:
-=======
                 self.position += pymath.Vector2(0, -3)
         if self.position.y <= 0:
->>>>>>> fcf33ef176a313dcb8c465a4afa95e3a7644756f
             self.bang = False
         self.is_hit()
             
