@@ -2,13 +2,13 @@ from  pathlib import Path
 import random
 
 import pygame
-import pygame.math as pymath
 
 random.seed()
 
 ALIENMOVE = pygame.event.custom_type()
 MISSILLEMOVE = pygame.event.custom_type()
 SHIPMOVE = pygame.event.custom_type()
+BOMBMOVE = pygame.event.custom_type()
 
 
 class Ship():
@@ -22,10 +22,8 @@ class Ship():
         ship_path = path.joinpath('ship_right.png')
         self.ships['right'] = pygame.image.load(ship_path)
         self.screen = screen
-        self.delta = pymath.Vector2(4, 0)
-        self.posx = 200
-        self.posy = 500
-        self.position = pymath.Vector2(200, 500)
+        self.delta = pygame.Vector2(4, 0)
+        self.position = pygame.Vector2(200, 500)
         self.current_frame = self.ships['straight']
         self.allow_move = False
         
@@ -55,46 +53,69 @@ class Missile():
     def __init__(self, screen, ship, aliens):
         self.ship = ship
         self.screen = screen
-        self.bang = False
+        self.visible = False
         self.tick = 0
         self._dy = 3
         self.aliens = aliens
-        self.position = self.ship.position + pymath.Vector2(8, 0)
+        self.position = self.ship.position + pygame.Vector2(8, 0)
 
     def move(self, event):
-        if self.bang:
+        if self.visible:
             if event.type == MISSILLEMOVE:
-                self.position += pymath.Vector2(0, -3)
+                self.position += pygame.Vector2(0, -3)
         if self.position.y <= 0:
-            self.bang = False
+            self.visible = False
         self.is_hit()
             
 
     def draw(self):
-        if self.bang:
+        if self.visible:
             pygame.Surface.blit(self.screen, self.current_frame,
                                 self.position)
 
     def fire(self):
-        self.bang = True
+        self.visible = True
 
     def is_hit(self):
         rect_miss = self.current_frame.get_rect()
         rect_miss = rect_miss.move(self.position)
         for al in self.aliens:
             rect_al = al.current_frame.get_rect()
-            rect_al = rect_al.move(al.posx, al.posy)
+            rect_al = rect_al.move(al.position)
             if rect_al.colliderect(rect_miss):
-                self.bang = False
+                self.visible = False
                 al.show = False
-                print("bang")
         al_del = {al for al in self.aliens if not al.show}
         for al in al_del:
             self.aliens.remove(al)
 
 class Bomb():
-    def __init__(self, screen, position):
+    current_frame = pygame.image.load(
+            Path('images').joinpath('missile.png'))
+    def __init__(self, screen, alien):
+        self.position = alien.position + pygame.Vector2(0, 20)
+        self.visible = False
+        self.delta = pygame.Vector2(0, 3)
+        self.screen = screen
+
+    def move(self, event):
+        if self.visible and event.type == BOMBMOVE:
+            self.position += self.delta
+        if self.position.y >= self.screen.get_height():
+            self.visible = False
+        self.is_hit()
+
+    def is_hit(self):
         pass
+
+    def fire(self):
+        self.visible = True
+
+    def draw(self):
+        if self.visible:
+            pygame.Surface.blit(self.screen, self.current_frame,
+                                self.position)
+        
 
 
 class Alien():
@@ -102,12 +123,11 @@ class Alien():
         self.screen = screen
         self.current_frame = pygame.image.load(path)
         self.position = position
-        self._position = position
+        self._position = pygame.Vector2(position)
         self.show = True
-        self.delta = pymath.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
+        self.delta = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
 
     def move(self, event):
-        print(f'{id(self)} , {self.delta}')
         pos_start = self._position
         if event.type == ALIENMOVE:
             self.position += self.delta
