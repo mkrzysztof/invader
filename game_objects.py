@@ -107,7 +107,7 @@ class Alien():
         self.delta = pymath.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
 
     def move(self, event):
-        print(self.delta)
+        print(f'{id(self)} , {self.delta}')
         pos_start = self._position
         if event.type == ALIENMOVE:
             self.position += self.delta
