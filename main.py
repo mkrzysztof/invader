@@ -11,6 +11,7 @@ if __name__ == '__main__':
     
     pygame.time.set_timer(game_objects.ALIENMOVE, 100)
     pygame.time.set_timer(game_objects.MISSILLEMOVE, 20)
+    pygame.time.set_timer(game_objects.SHIPMOVE, 20)
     pygame.time.set_timer(ALLOWFIRE, 1000)
     pygame.event.set_allowed([pygame.KEYDOWN, game_objects.ALIENMOVE,
                               pygame.QUIT])
@@ -31,7 +32,6 @@ if __name__ == '__main__':
     while running:
         screen.fill('black')
         events = pygame.event.get()
-        print(events)
         for event in events:
             run_objects = []
             run_objects.append(mov_ship)
@@ -56,5 +56,5 @@ if __name__ == '__main__':
         bullets = bullets - end_bullets
         # clock.tick(2000)
         pygame.display.flip()
-        pygame.time.delay(10)
+        # pygame.time.delay(10)
     

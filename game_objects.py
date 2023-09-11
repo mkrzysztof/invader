@@ -7,6 +7,7 @@ random.seed()
 
 ALIENMOVE = pygame.event.custom_type()
 MISSILLEMOVE = pygame.event.custom_type()
+SHIPMOVE = pygame.event.custom_type()
 
 
 class Ship():
@@ -20,22 +21,27 @@ class Ship():
         ship_path = path.joinpath('ship_right.png')
         self.ships['right'] = pygame.image.load(ship_path)
         self.screen = screen
-        self._dx = 4
+        self._dx = 8
         self.posx = 200
         self.posy = 500
         self.current_frame = self.ships['straight']
+        self.allow_move = False
         
     def draw(self):
         pygame.Surface.blit(self.screen, self.current_frame, (self.posx, self.posy))
 
     def move(self, event):
-        if event.type == pygame.KEYDOWN:
+        if event.type == SHIPMOVE:
+            self.allow_move = True
+        if event.type == pygame.KEYDOWN and self.allow_move:
             if event.key == pygame.K_LEFT:
                 self.posx -= self._dx
                 self.current_frame = self.ships['left']
+                self.allow_move = False
             if event.key == pygame.K_RIGHT:
                 self.posx += self._dx
                 self.current_frame = self.ships['right']
+                self.allow_move = False
         else:
             self.current_frame = self.ships['straight']
 
@@ -49,12 +55,13 @@ class Missile():
         self.screen = screen
         self.bang = False
         self.tick = 0
+        self._dy = 3
         self.aliens = aliens
 
     def move(self, event):
         if self.bang:
             if event.type == MISSILLEMOVE:
-                self.posy -= 3
+                self.posy -= self._dy
         if self.posy <= 0:
             self.bang = False
         self.is_hit()
