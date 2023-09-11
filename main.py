@@ -1,5 +1,6 @@
 from pathlib import Path
 import pygame
+import pygame.math as pymath
 import game_objects
 
 ALLOWFIRE = pygame.event.custom_type()
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     path = Path('images').joinpath('alien1.png')
     aliens = set()
     for posx in [100, 150, 200, 250, 300, 350]:
-        aliens.add(game_objects.Alien(path, screen, (posx, 100)))
+        aliens.add(game_objects.Alien(path, screen, pymath.Vector2(posx, 100)))
     mov_ship = game_objects.Ship(screen)
     pygame.key.set_repeat(100)
     bullets = set()
@@ -31,7 +32,6 @@ if __name__ == '__main__':
     while running:
         screen.fill('black')
         events = pygame.event.get()
-        print(events)
         for event in events:
             run_objects = []
             run_objects.append(mov_ship)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
             obj.draw()
         end_bullets = {b for b in bullets if not b.bang}
         bullets = bullets - end_bullets
-        # clock.tick(2000)
+        a = clock.tick()
+        pygame.time.delay(20-a)
         pygame.display.flip()
-        pygame.time.delay(10)
     
