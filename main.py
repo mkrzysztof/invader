@@ -27,8 +27,9 @@ if __name__ == '__main__':
     running = True
     path = Path('images').joinpath('alien1.png')
     aliens = set()
-    for posx in [100, 150, 200, 250, 300, 350]:
-        aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, 100)))
+    for posx in range(100, 600, 50):
+        for posy in range(100, 300, 50):
+            aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy)))
     mov_ship = game_objects.Ship(screen)
     pygame.key.set_repeat(100)
     bullets = set()
@@ -53,8 +54,8 @@ if __name__ == '__main__':
                     allow_fire = False
             run_objects.extend(bullets)
             for alien in aliens:
-                if random.randint(0, 1) == 1 and event.type == BOMBALLOW:
-                    bomb = game_objects.Bomb(screen, alien)
+                if random.randint(0, 100) == 1 and event.type == BOMBALLOW:
+                    bomb = game_objects.Bomb(screen, alien, mov_ship)
                     bomb.fire()
                     bombs.add(bomb)
             run_objects.extend(bombs)
