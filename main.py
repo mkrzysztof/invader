@@ -7,7 +7,7 @@ ALLOWFIRE = pygame.event.custom_type()
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((800, 600), pygame.FULLSCREEN)
     clock = pygame.time.Clock()
     
     pygame.time.set_timer(game_objects.ALIENMOVE, 100)
@@ -68,6 +68,6 @@ if __name__ == '__main__':
         bullets = bullets - end_bullets
         end_bomb = {b for b in bombs if not b.visible}
         a = clock.tick()
-        pygame.time.delay(20-a)
+        pygame.time.delay(30-a)
         pygame.display.flip()
     

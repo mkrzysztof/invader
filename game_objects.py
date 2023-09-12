@@ -132,11 +132,11 @@ class Alien():
         self.current_frame = pygame.image.load(path)
         self.position = position
         self.delta = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
-        self._position = pygame.Vector2(position)
+        self.initial_position = pygame.Vector2(position)
         self.show = True
 
     def move(self, event):
-        pos_start = self._position
+        pos_start = self.initial_position
         if event.type == ALIENMOVE:
             self.position += self.delta
             if (self.position.x >= pos_start.x + self.possible_move or
