@@ -9,7 +9,6 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((800, 600), pygame.FULLSCREEN)
     clock = pygame.time.Clock()
-    
     pygame.time.set_timer(game_objects.ALIENMOVE, 100)
     pygame.time.set_timer(game_objects.MISSILLEMOVE, 20)
     pygame.time.set_timer(game_objects.SHIPMOVE, 20)
@@ -69,5 +68,4 @@ if __name__ == '__main__':
         end_bomb = {b for b in bombs if not b.visible}
         a = clock.tick()
         pygame.time.delay(30-a)
-        pygame.display.flip()
-    
+        pygame.display.flip()    
