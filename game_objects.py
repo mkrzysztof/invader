@@ -143,7 +143,7 @@ class Alien():
         self.is_out = False
 
     def fallen(self):
-        r = random.randint(1, 1000)
+        r = random.randint(1, 10000)
         if  r == 6:
             self.is_fallen = True
             self.speed = self.fallen_speed
@@ -152,6 +152,8 @@ class Alien():
         if self.rect.topleft[1] >= self.screen.get_height():
             self.is_out = True
             self.rect = pygame.Rect(self.initial_rect)
+            self.is_fallen = False
+            self.speed = pygame.Vector2(self.speed.x, 0)
         
 
     def move(self, event):
