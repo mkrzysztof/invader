@@ -137,7 +137,7 @@ class Alien():
         self.rect.move_ip(self.position)
         self.initial_rect = pygame.Rect(self.rect)
         self.speed = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
-        self.fallen_speed = pygame.Vector2(2, 3)
+        self.fallen_speed = pygame.Vector2(2, 1)
         self.show = True
         self.is_fallen = False
         self.is_out = False
@@ -161,7 +161,8 @@ class Alien():
             # self.position += self.speed
             if self.is_fallen:
                 self.rect.move_ip(self.speed)
-                if self.rect.topleft[0] <= 0:
+                if (self.rect.topleft[0] <= 0
+                    or self.rect.topright[0] > self.screen.get_width()):
                     self.speed = pygame.Vector2(-self.speed.x, self.speed.y)
             else:
                 self.rect.move_ip(self.speed)
