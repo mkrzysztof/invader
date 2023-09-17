@@ -14,7 +14,10 @@ BOMBMOVE = pygame.event.custom_type()
 class Ship():
     def __init__(self, screen):
         path = Path('images')
-        self.rect = pygame.Rect(200, 500, 20, 20)
+        screen_width = screen.get_width()
+        screen_height = screen.get_height()
+        print(screen_width, screen_height)
+        self.rect = pygame.Rect(screen_width//2, screen_height-20, 20, 20)
         self.speed = pygame.Vector2(4, 0)
         self.screen = screen
         self.ships = {}
@@ -128,19 +131,42 @@ class Alien():
     possible_move = 10
     def __init__(self, path, screen, position):
         self.screen = screen
-        self.current_frame = pygame.image.load(path)
         self.position = position
-        self.delta = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
-        self.initial_position = pygame.Vector2(position)
+        self.current_frame = pygame.image.load(path)
+        self.rect = self.current_frame.get_rect()
+        self.rect.move_ip(self.position)
+        self.initial_rect = pygame.Rect(self.rect)
+        self.speed = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
+        self.fallen_speed = pygame.Vector2(2, 3)
         self.show = True
+        self.is_fallen = False
+        self.is_out = False
+
+    def fallen(self):
+        r = random.randint(1, 1000)
+        if  r == 6:
+            self.is_fallen = True
+            self.speed = self.fallen_speed
+
+    def alien_is_out(self):
+        if self.rect.topleft[1] >= self.screen.get_height():
+            self.is_out = True
+            self.rect = pygame.Rect(self.initial_rect)
+        
 
     def move(self, event):
-        pos_start = self.initial_position
         if event.type == ALIENMOVE:
-            self.position += self.delta
-            if (self.position.x >= pos_start.x + self.possible_move or
-            self.position.x <= pos_start.x - self.possible_move):
-                self.delta = -self.delta
+            # self.position += self.speed
+            if self.is_fallen:
+                self.rect.move_ip(self.speed)
+                if self.rect.topleft[0] <= 0:
+                    self.speed = pygame.Vector2(-self.speed.x, self.speed.y)
+            else:
+                self.rect.move_ip(self.speed)
+                if (self.rect.topleft[0] >= self.position.x + self.possible_move or
+                    self.rect.topleft[0] <= self.position.x - self.possible_move):
+                    self.speed = -self.speed
+
 
     def draw(self):
-        pygame.Surface.blit(self.screen, self.current_frame, self.position)
+        self.screen.blit(self.current_frame, self.rect)

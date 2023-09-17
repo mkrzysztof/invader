@@ -7,7 +7,9 @@ ALLOWFIRE = pygame.event.custom_type()
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((800, 600), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((640, 480),
+                                     # pygame.FULLSCREEN
+                                     )
     clock = pygame.time.Clock()
     pygame.time.set_timer(game_objects.ALIENMOVE, 100)
     pygame.time.set_timer(game_objects.MISSILLEMOVE, 20)
@@ -60,6 +62,10 @@ if __name__ == '__main__':
             run_objects.extend(bombs)
             for obj in run_objects:
                 obj.move(event)
+            for alien in {al for al in aliens if al.is_fallen == False}:
+                alien.fallen()
+            for alien in aliens:
+                alien.alien_is_out()
         # draw
         for obj in run_objects:
             obj.draw()
