@@ -83,9 +83,7 @@ class Missile():
 
     def is_hit(self):
         for al in self.aliens:
-            rect_al = al.current_frame.get_rect()
-            rect_al = rect_al.move(al.position)
-            if rect_al.colliderect(self.rect):
+            if al.rect.colliderect(self.rect):
                 self.visible = False
                 al.show = False
         al_del = {al for al in self.aliens if not al.show}
