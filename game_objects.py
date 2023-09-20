@@ -5,11 +5,6 @@ import pygame
 
 random.seed()
 
-ALIENMOVE = pygame.event.custom_type()
-MISSILLEMOVE = pygame.event.custom_type()
-SHIPMOVE = pygame.event.custom_type()
-BOMBMOVE = pygame.event.custom_type()
-
 
 class Ship():
     def __init__(self, screen):
@@ -18,7 +13,7 @@ class Ship():
         screen_height = screen.get_height()
         print(screen_width, screen_height)
         self.rect = pygame.Rect(screen_width//2, screen_height-20, 20, 20)
-        self.speed = pygame.Vector2(4, 0)
+        self.speed = pygame.Vector2(1, 0)
         self.screen = screen
         self.ships = {}
         ship_path = path.joinpath('ship_straight.png')
@@ -33,20 +28,13 @@ class Ship():
     def draw(self):
         self.screen.blit(self.current_frame, self.rect)
 
-    def move(self, event):
-        if event.type == SHIPMOVE:
-            self.allow_move = True
-        if event.type == pygame.KEYDOWN and self.allow_move:
-            if event.key == pygame.K_LEFT:
-                speed = -self.speed
-                self.rect = self.rect.move(speed)
-                self.current_frame = self.ships['left']
-                self.allow_move = False
-            if event.key == pygame.K_RIGHT:
-                speed = self.speed
-                self.rect = self.rect.move(speed)
-                self.current_frame = self.ships['right']
-                self.allow_move = False
+    def move(self):
+        if pygame.key.get_pressed()[pygame.K_LEFT]:
+            self.rect = self.rect.move(-self.speed)
+            self.current_frame = self.ships['left']
+        elif pygame.key.get_pressed()[pygame.K_RIGHT]:
+            self.rect = self.rect.move(self.speed)
+            self.current_frame = self.ships['right']
         else:
             self.current_frame = self.ships['straight']
 
@@ -64,10 +52,9 @@ class Missile():
         self.visible = False
         self.aliens = aliens
 
-    def move(self, event):
+    def move(self):
         if self.visible:
-            if event.type == MISSILLEMOVE:
-                self.rect.move_ip(self.speed)
+            self.rect.move_ip(self.speed)
         if self.rect.midbottom[1] <= 0:
             self.visible = False
         self.is_hit()
@@ -100,9 +87,8 @@ class Bomb():
         self.ship = ship
         self.screen = screen
 
-    def move(self, event):
-        if self.visible and event.type == BOMBMOVE:
-            self.rect.move_ip(self.speed)
+    def move(self):
+        self.rect.move_ip(self.speed)
         if not self.screen.get_rect().contains(self.rect):
             self.visible = False
         self.is_hit()
@@ -130,7 +116,7 @@ class Alien():
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(position)
         self.initial_rect = pygame.Rect(self.rect)
-        self.speed = pygame.Vector2(random.choice((-2, 2, -3, 3, -4, 4)), 0)
+        self.speed = pygame.Vector2(random.choice((-1, 1)), 0)
         self.fallen_speed = pygame.Vector2(2, 1)
         self.show = True
         self.is_fallen = False
@@ -149,18 +135,17 @@ class Alien():
             self.speed = pygame.Vector2(self.speed.x, 0)
         
 
-    def move(self, event):
-        if event.type == ALIENMOVE:
-            if self.is_fallen:
-                self.rect.move_ip(self.speed)
-                if (self.rect.left <= 0
-                    or self.rect.right > self.screen.get_width()):
-                    self.speed = pygame.Vector2(-self.speed.x, self.speed.y)
-            else:
-                self.rect.move_ip(self.speed)
-                if (self.rect.right >= self.initial_rect.x + self.possible_move or
-                    self.rect.left <= self.initial_rect.x - self.possible_move):
-                    self.speed = -self.speed
+    def move(self):
+        if self.is_fallen:
+            self.rect.move_ip(self.speed)
+            if (self.rect.left <= 0
+                or self.rect.right > self.screen.get_width()):
+                self.speed = pygame.Vector2(-self.speed.x, self.speed.y)
+        else:
+            self.rect.move_ip(self.speed)
+            if (self.rect.right >= self.initial_rect.x + self.possible_move or
+                self.rect.left <= self.initial_rect.x - self.possible_move):
+                self.speed = -self.speed
 
 
     def draw(self):

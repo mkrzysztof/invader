@@ -3,28 +3,19 @@ import random
 import pygame
 import game_objects
 
+MAX_FPS = 100
+FPS = 30
 ALLOWFIRE = pygame.event.custom_type()
+
 
 if __name__ == '__main__':
     pygame.init()
+    delta = 0.0
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
     clock = pygame.time.Clock()
-    pygame.time.set_timer(game_objects.ALIENMOVE, 100)
-    pygame.time.set_timer(game_objects.MISSILLEMOVE, 20)
-    pygame.time.set_timer(game_objects.SHIPMOVE, 20)
-    pygame.time.set_timer(game_objects.BOMBMOVE, 10)
     pygame.time.set_timer(ALLOWFIRE, 1000)
-    BOMBALLOW = pygame.event.custom_type()
-    pygame.time.set_timer(BOMBALLOW, 1000)
-    pygame.event.set_allowed([pygame.KEYDOWN, game_objects.ALIENMOVE,
-                              pygame.QUIT])
-    pygame.event.set_blocked([pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP,
-                              pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN,
-                              pygame.WINDOWENTER, pygame.WINDOWTAKEFOCUS,
-                              pygame.WINDOWLEAVE,pygame.ACTIVEEVENT,
-                              pygame.TEXTINPUT, pygame.TEXTEDITING,])
     running = True
     path = Path('images').joinpath('alien1.png')
     aliens = set()
@@ -32,46 +23,44 @@ if __name__ == '__main__':
         for posy in range(100, 300, 50):
             aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy)))
     mov_ship = game_objects.Ship(screen)
-    pygame.key.set_repeat(100)
     bullets = set()
     bombs = set()
     allow_fire = False
     while running:
-        screen.fill('black')
-        events = pygame.event.get()
-        for event in events:
-            run_objects = []
-            run_objects.append(mov_ship)
-            run_objects.extend(aliens)
+        run_objects = []
+        run_objects.append(mov_ship)
+        run_objects.extend(aliens)
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == ALLOWFIRE:
                 allow_fire = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and allow_fire:
-                    bullet = game_objects.Missile(screen, mov_ship, aliens)
-                    bullet.fire()
-                    bullets.add(bullet)
-                    allow_fire = False
-            run_objects.extend(bullets)
-            for alien in aliens:
-                if random.randint(0, 100) == 1 and event.type == BOMBALLOW:
-                    bomb = game_objects.Bomb(screen, alien, mov_ship)
-                    bomb.fire()
-                    bombs.add(bomb)
-            run_objects.extend(bombs)
-            for obj in run_objects:
-                obj.move(event)
-            for alien in {al for al in aliens if al.is_fallen == False}:
-                alien.fallen()
-            for alien in aliens:
-                alien.alien_is_out()
+        if pygame.key.get_pressed()[pygame.K_SPACE] and allow_fire:
+            bullet = game_objects.Missile(screen, mov_ship, aliens)
+            bullet.fire()
+            bullets.add(bullet)
+            allow_fire = False
+        run_objects.extend(bullets)
+        for alien in aliens:
+            if random.randint(0, 10000) == 1:
+                bomb = game_objects.Bomb(screen, alien, mov_ship)
+                bomb.fire()
+                bombs.add(bomb)
+        run_objects.extend(bombs)
+        for obj in run_objects:
+            obj.move()
+        for alien in {al for al in aliens if al.is_fallen == False}:
+            alien.fallen()
+        for alien in aliens:
+            alien.alien_is_out()
         # draw
+        screen.fill('black')
         for obj in run_objects:
             obj.draw()
         end_bullets = {b for b in bullets if not b.visible}
         bullets = bullets - end_bullets
         end_bomb = {b for b in bombs if not b.visible}
-        a = clock.tick()
-        pygame.time.delay(30-a)
+        delta += clock.tick(MAX_FPS)/1000
+        while delta > 1.0/FPS:
+            delta -= 1.0/FPS
         pygame.display.flip()    
