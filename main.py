@@ -6,11 +6,7 @@ import game_objects
 MAX_FPS = 100
 FPS = 30
 ALLOWFIRE = pygame.event.custom_type()
-
-def set_aliens(aliens):
-    for posx in range(100, 600, 50):
-        for posy in range(100, 300, 50):
-            aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy)))
+    
 
 if __name__ == '__main__':
     pygame.init()
@@ -23,8 +19,10 @@ if __name__ == '__main__':
     running = True
     path = Path('images').joinpath('alien1.png')
     aliens = set()
-    set_aliens(aliens)
     mov_ship = game_objects.Ship(screen)
+    for posx in range(100, 600, 50):
+        for posy in range(100, 300, 50):
+            aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy), mov_ship))
     bullets = set()
     bombs = set()
     allow_fire = False

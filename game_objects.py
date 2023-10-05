@@ -110,7 +110,7 @@ class Bomb():
 
 class Alien():
     possible_move = 20
-    def __init__(self, path, screen, position):
+    def __init__(self, path, screen, position, ship):
         self.screen = screen
         self.current_frame = pygame.image.load(path)
         self.rect = self.current_frame.get_rect()
@@ -121,6 +121,7 @@ class Alien():
         self.show = True
         self.is_fallen = False
         self.is_out = False
+        self.ship = ship
 
     def fallen(self): 
         if random.randint(1, 10000) == 6:
@@ -146,6 +147,12 @@ class Alien():
             if (self.rect.right >= self.initial_rect.x + self.possible_move or
                 self.rect.left <= self.initial_rect.x - self.possible_move):
                 self.speed = -self.speed
+        self.touch_ship()
+
+    def touch_ship(self):
+        if self.rect.colliderect(self.ship.rect):
+            pygame.quit()
+            exit()
 
 
     def draw(self):
