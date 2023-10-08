@@ -37,6 +37,13 @@ class Ship():
             self.current_frame = self.ships['right']
         else:
             self.current_frame = self.ships['straight']
+        right_pos = self.rect.right
+        left_pos = self.rect.left
+        rect_screen = self.screen.get_rect()
+        if right_pos >= rect_screen.right:
+            self.rect = self.rect.move(rect_screen.right - right_pos, 0)
+        if left_pos <= rect_screen.left:
+            self.rect = self.rect.move(rect_screen.left - left_pos, 0)
 
 
 class Missile():

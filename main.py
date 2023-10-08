@@ -12,7 +12,7 @@ if __name__ == '__main__':
     pygame.init()
     delta = 0.0
     screen = pygame.display.set_mode((640, 480),
-                                     # pygame.FULLSCREEN
+                                     pygame.FULLSCREEN
                                      )
     clock = pygame.time.Clock()
     pygame.time.set_timer(ALLOWFIRE, 1000)
