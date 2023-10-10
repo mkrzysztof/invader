@@ -6,13 +6,25 @@ import game_objects
 MAX_FPS = 100
 FPS = 30
 ALLOWFIRE = pygame.event.custom_type()
+
+def init_aliens(aliens, ship):
+    for posx in range(100, 600, 50):
+        for posy in range(100, 300, 50):
+            aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy), ship))
+
+def bomb_fall(aliens, bombs):
+    for alien in aliens:
+        if random.randint(0, 1000) == 1:
+            bomb = game_objects.Bomb(screen, alien, mov_ship)
+            bomb.fire()
+            bombs.add(bomb)
     
 
 if __name__ == '__main__':
     pygame.init()
     delta = 0.0
     screen = pygame.display.set_mode((640, 480),
-                                     pygame.FULLSCREEN
+                                     # pygame.FULLSCREEN
                                      )
     clock = pygame.time.Clock()
     pygame.time.set_timer(ALLOWFIRE, 1000)
@@ -20,9 +32,7 @@ if __name__ == '__main__':
     path = Path('images').joinpath('alien1.png')
     aliens = set()
     mov_ship = game_objects.Ship(screen)
-    for posx in range(100, 600, 50):
-        for posy in range(100, 300, 50):
-            aliens.add(game_objects.Alien(path, screen, pygame.Vector2(posx, posy), mov_ship))
+    init_aliens(aliens, mov_ship)
     bullets = set()
     bombs = set()
     allow_fire = False
@@ -41,11 +51,7 @@ if __name__ == '__main__':
             bullets.add(bullet)
             allow_fire = False
         run_objects.extend(bullets)
-        for alien in aliens:
-            if random.randint(0, 10000) == 1:
-                bomb = game_objects.Bomb(screen, alien, mov_ship)
-                bomb.fire()
-                bombs.add(bomb)
+        bomb_fall(aliens, bombs)
         run_objects.extend(bombs)
         for obj in run_objects:
             obj.move()
@@ -59,7 +65,6 @@ if __name__ == '__main__':
             obj.draw()
         end_bullets = {b for b in bullets if not b.visible}
         bullets = bullets - end_bullets
-        end_bomb = {b for b in bombs if not b.visible}
         delta += clock.tick(MAX_FPS)/1000
         while delta > 1.0/FPS:
             delta -= 1.0/FPS
