@@ -98,13 +98,12 @@ class Bomb():
         self.rect.move_ip(self.speed)
         if not self.screen.get_rect().contains(self.rect):
             self.visible = False
-        self.is_hit()
 
     def is_hit(self):
         ship = self.ship
         if self.rect.colliderect(ship.rect):
-            pygame.quit()
-            exit()
+            self.visible = False
+            return True
 
     def fire(self):
         self.visible = True
@@ -131,7 +130,7 @@ class Alien():
         self.ship = ship
 
     def fallen(self): 
-        if random.randint(1, 10000) == 6:
+        if random.randint(1, 1000) == 6:
             self.is_fallen = True
             self.speed = self.fallen_speed
 
@@ -154,12 +153,10 @@ class Alien():
             if (self.rect.right >= self.initial_rect.x + self.possible_move or
                 self.rect.left <= self.initial_rect.x - self.possible_move):
                 self.speed = -self.speed
-        self.touch_ship()
 
     def touch_ship(self):
-        if self.rect.colliderect(self.ship.rect):
-            pygame.quit()
-            exit()
+        return self.rect.colliderect(self.ship.rect)
+        
 
 
     def draw(self):
