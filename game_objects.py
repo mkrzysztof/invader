@@ -23,6 +23,8 @@ class Ship():
         ship_path = path.joinpath('ship_right.png')
         self.ships['right'] = pygame.image.load(ship_path)
         self.current_frame = self.ships['straight']
+        boom_path = path.joinpath('boom.png')
+        self.boom = pygame.image.load(boom_path)
         self.allow_move = False
 
     def draw(self):
@@ -103,6 +105,7 @@ class Bomb():
         ship = self.ship
         if self.rect.colliderect(ship.rect):
             self.visible = False
+            self.ship.current_frame = self.ship.boom
             return True
 
     def fire(self):
@@ -155,7 +158,9 @@ class Alien():
                 self.speed = -self.speed
 
     def touch_ship(self):
-        return self.rect.colliderect(self.ship.rect)
+        if self.rect.colliderect(self.ship.rect):
+            self.ship.current_frame = self.ship.boom
+            return True
         
 
 

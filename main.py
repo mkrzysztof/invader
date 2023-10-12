@@ -86,17 +86,20 @@ def main_in_loop(screen, clock,ship, aliens, bullets,
     run_objects.extend(bombs)
     for obj in run_objects:
         obj.move()
+    pause_on_hit = False
     for bomb in bombs:
         if bomb.is_hit():
             live_numb -= 1
+            pause_on_hit = True
             break
     for alien in aliens:
         if alien.touch_ship():
             aliens -= {alien}
             live_numb -= 1
+            pause_on_hit = True
             break
     for alien in {al for al in aliens if not al.is_fallen}:
-        alien.fallen
+        alien.fallen()
     for alien in aliens:
         alien.alien_is_out()
     screen.fill('black')
@@ -111,6 +114,8 @@ def main_in_loop(screen, clock,ship, aliens, bullets,
     while delta > 1.0/FPS:
         delta -= 1.0/FPS
     pygame.display.flip()
+    if pause_on_hit:
+        pygame.time.delay(1000)
     return live_numb, running, allow_fire, delta
         
 if __name__ == '__main__':
