@@ -34,15 +34,33 @@ def show_lives(n, screen):
         screen.blit(img_ship, rect)
         posx += SPACE
     
+
+def welcome_page(screen):
+    def_font_name =  pygame.font.get_default_font()
+    font = pygame.font.SysFont(def_font_name, 20)
+    surf = font.render('xxxx', True, pygame.Color(255, 0, 0))
+    running = True
+    rect = surf.get_rect()
+    rect.move_ip(100, 100)
+    screen.blit(surf, rect)
+    while running:
+        for e in pygame.event.get():
+            pass
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            running = False
+        pygame.display.flip()
+    
     
 
 if __name__ == '__main__':
     pygame.init()
+    pygame.font.init()
     live_numb = 3
     delta = 0.0
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
+    welcome_page(screen)
     clock = pygame.time.Clock()
     pygame.time.set_timer(ALLOWFIRE, 1000)
     running = True
