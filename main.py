@@ -97,11 +97,12 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
             game_parameters.running = False
         if event.type == ALLOWFIRE:
             game_parameters.allow_fire = True
-    if pygame.key.get_pressed()[pygame.K_SPACE] and game_parameters.allow_fire:
-        bullet = game_objects.Missile(screen, ship_objects.ship, aliens_objects.aliens)
-        bullet.fire()
-        ship_objects.bullets.add(bullet)
-        game_objects.allow_fire = False
+    if game_parameters.allow_fire:
+        game_parameters.allow_fire = False
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            bullet = game_objects.Missile(screen, ship_objects.ship, aliens_objects.aliens)
+            bullet.fire()
+            ship_objects.bullets.add(bullet)
     run_objects.extend(ship_objects.bullets)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship)
     run_objects.extend(aliens_objects.bombs)
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     game_parameters = GameParameters()
     welcome_page(screen)
     time_struct = TimeStruct()
-    pygame.time.set_timer(ALLOWFIRE, 1000)
+    pygame.time.set_timer(ALLOWFIRE, 500)
     path = Path('images').joinpath('alien1.png')
     aliens_objects = AliensObjects()
     ship_objects = ShipObjects(screen)
