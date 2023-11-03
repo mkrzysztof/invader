@@ -149,7 +149,7 @@ if __name__ == '__main__':
     game_parameters = GameParameters()
     welcome_page(screen)
     time_struct = TimeStruct()
-    pygame.time.set_timer(ALLOWFIRE, 500)
+    pygame.time.set_timer(ALLOWFIRE, 100)
     path = Path('images').joinpath('alien1.png')
     aliens_objects = AliensObjects()
     ship_objects = ShipObjects(screen)
