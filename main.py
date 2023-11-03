@@ -16,10 +16,10 @@ def init_aliens(aliens, ship):
                                           pygame.Vector2(posx, posy),
                                           ship))
 
-def bomb_fall(aliens, bombs):
+def bomb_fall(aliens, bombs, ship):
     for alien in aliens:
         if random.randint(0, 1000) == 1:
-            bomb = game_objects.Bomb(screen, alien, mov_ship)
+            bomb = game_objects.Bomb(screen, alien, ship)
             bomb.fire()
             bombs.add(bomb)
 
@@ -38,6 +38,7 @@ def show_lives(n, screen):
     
 
 def welcome_page(screen):
+    screen.fill('black')
     def_font_name =  pygame.font.get_default_font()
     font = pygame.font.SysFont(def_font_name, 20)
     surf = font.render('Title Screen', True, pygame.Color(255, 0, 0))
@@ -65,84 +66,99 @@ def gameover_page(screen):
             running = False
         pygame.display.flip()
     
+class TimeStruct:
+    def __init__(self):
+        self.delta = 0
+        self.clock = pygame.time.Clock()
 
-def main_in_loop(screen, clock,ship, aliens, bullets,
-                 bombs, live_numb, running, allow_fire, delta):
+class ShipObjects:
+    def __init__(self, screen):
+        self.bullets = set()
+        self.ship = game_objects.Ship(screen)
+
+class AliensObjects:
+    def __init__(self):
+        self.aliens = set()
+        self.bombs = set()
+
+class GameParameters:
+    def __init__(self):
+        self.live_numb = 3
+        self.running = True
+        self.allow_fire = False
+
+def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
+                 game_parameters):
     run_objects = []
-    run_objects.append(ship)
-    run_objects.extend(aliens)
+    run_objects.append(ship_objects.ship)
+    run_objects.extend(aliens_objects.aliens)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            game_parameters.running = False
         if event.type == ALLOWFIRE:
-            allow_fire = True
-    if pygame.key.get_pressed()[pygame.K_SPACE] and allow_fire:
-        bullet = game_objects.Missile(screen, ship, aliens)
+            game_parameters.allow_fire = True
+    if pygame.key.get_pressed()[pygame.K_SPACE] and game_parameters.allow_fire:
+        bullet = game_objects.Missile(screen, ship_objects.ship, aliens_objects.aliens)
         bullet.fire()
-        bullets.add(bullet)
-        allow_fire = False
-    run_objects.extend(bullets)
-    bomb_fall(aliens, bombs)
-    run_objects.extend(bombs)
+        ship_objects.bullets.add(bullet)
+        game_objects.allow_fire = False
+    run_objects.extend(ship_objects.bullets)
+    bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship)
+    run_objects.extend(aliens_objects.bombs)
     for obj in run_objects:
         obj.move()
     pause_on_hit = False
-    for bomb in bombs:
+    for bomb in aliens_objects.bombs:
         if bomb.is_hit():
-            live_numb -= 1
+            game_parameters.live_numb -= 1
             pause_on_hit = True
             break
-    for alien in aliens:
+    for alien in aliens_objects.aliens:
         if alien.touch_ship():
-            aliens -= {alien}
-            live_numb -= 1
+            aliens_objects.aliens -= {alien}
+            game_parameters.live_numb -= 1
             pause_on_hit = True
             break
-    for alien in {al for al in aliens if not al.is_fallen}:
+    for alien in {al for al in aliens_objects.aliens if not al.is_fallen}:
         alien.fallen()
-    for alien in aliens:
+    for alien in aliens_objects.aliens:
         alien.alien_is_out()
     screen.fill('black')
     for obj in run_objects:
         obj.draw()
-    show_lives(live_numb, screen)
-    end_bullets = {b for b in bullets if not b.visible}
-    bullets -= end_bullets
+    show_lives(game_parameters.live_numb, screen)
+    end_bullets = {b for b in ship_objects.bullets if not b.visible}
+    ship_objects.bullets -= end_bullets
+    bombs = aliens_objects.bombs
     end_bombs = {bomb for bomb in bombs if not bomb.visible}
     bombs -= end_bombs
-    delta += clock.tick(MAX_FPS)/1000
-    while delta > 1.0/FPS:
-        delta -= 1.0/FPS
+    time_struct.delta += time_struct.clock.tick(MAX_FPS)/1000
+    while time_struct.delta > 1.0/FPS:
+        time_struct.delta -= 1.0/FPS
     pygame.display.flip()
     if pause_on_hit:
         pygame.time.delay(1000)
-    return live_numb, running, allow_fire, delta
         
 if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
-    live_numb = 3
-    delta = 0.0
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
+    game_parameters = GameParameters()
     welcome_page(screen)
-    clock = pygame.time.Clock()
+    time_struct = TimeStruct()
     pygame.time.set_timer(ALLOWFIRE, 1000)
-    running = True
     path = Path('images').joinpath('alien1.png')
-    aliens = set()
-    mov_ship = game_objects.Ship(screen)
-    init_aliens(aliens, mov_ship)
-    bullets = set()
-    bombs = set()
-    allow_fire = False
-    while running:
-        live_numb, running, allow_fire, delta = main_in_loop(screen, clock, mov_ship,
-                                                      aliens, bullets,
-                                                      bombs, live_numb,
-                                                      running, allow_fire, delta)
-        if live_numb <= 0:
-            running = False
+    aliens_objects = AliensObjects()
+    ship_objects = ShipObjects(screen)
+    init_aliens(aliens_objects.aliens, ship_objects.ship)
+    while game_parameters.running:
+        main_in_loop(screen, time_struct, ship_objects,
+                     aliens_objects,
+                     game_parameters)
+        print(game_parameters.allow_fire)
+        if game_parameters.live_numb <= 0:
+            game_parameters.running = False
     gameover_page(screen)
     pygame.quit()
