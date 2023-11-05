@@ -2,37 +2,50 @@ from pathlib import Path
 import random
 import pygame
 import game_objects
+from collections import namedtuple
+
+Position = namedtuple('Position', ['x', 'y'])
 
 MAX_FPS = 100
 FPS = 30
 ALLOWFIRE = pygame.event.custom_type()
-ALIEN_BEGIN_X = 100
-ALIEN_BEGIN_Y = 100
+
+
+ALIEN_BOMB_FREQUECY = 1000
 
 def init_aliens(aliens, ship):
-    for posx in range(ALIEN_BEGIN_X, ALIEN_BEGIN_X + 500, 50):
-        for posy in range(ALIEN_BEGIN_Y, ALIEN_BEGIN_Y + 200, 50):
+    ALIEN_BEGIN = Position(x =100, y=100)
+    SPACE_BETWEEN_ALIENS = 50
+    HORIZONT_ALIENS_NUMBER = 10
+    VERTICAL_ALIENS_NUMBER = 4
+    for posx in range(ALIEN_BEGIN.x,
+                      ALIEN_BEGIN.x
+                      + SPACE_BETWEEN_ALIENS * HORIZONT_ALIENS_NUMBER,
+                      SPACE_BETWEEN_ALIENS):
+        for posy in range(ALIEN_BEGIN.y,
+                          ALIEN_BEGIN.y
+                          + SPACE_BETWEEN_ALIENS * VERTICAL_ALIENS_NUMBER,
+                          SPACE_BETWEEN_ALIENS):
             aliens.add(game_objects.Alien(path, screen,
                                           pygame.Vector2(posx, posy),
                                           ship))
 
 def bomb_fall(aliens, bombs, ship):
     for alien in aliens:
-        if random.randint(0, 1000) == 1:
+        if random.randint(0, ALIEN_BOMB_FREQUECY) == 1:
             bomb = game_objects.Bomb(screen, alien, ship)
             bomb.fire()
             bombs.add(bomb)
 
 def show_lives(n, screen):
-    POS_X = 50
-    POS_Y = 50
+    POS = Position(x=50, y=50)
     SPACE = 20
     path = Path('images')
     ship_path = path.joinpath('ship_straight.png')
     img_ship = pygame.image.load(ship_path)
-    posx = POS_X
+    posx = POS.x
     for i in range(0, n):
-        rect = pygame.Rect(posx, POS_Y, 20, 20)
+        rect = pygame.Rect(posx, POS.y, 20, 20)
         screen.blit(img_ship, rect)
         posx += SPACE
     
@@ -158,7 +171,6 @@ if __name__ == '__main__':
         main_in_loop(screen, time_struct, ship_objects,
                      aliens_objects,
                      game_parameters)
-        print(game_parameters.allow_fire)
         if game_parameters.live_numb <= 0:
             game_parameters.running = False
     gameover_page(screen)
