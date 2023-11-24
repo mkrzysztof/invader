@@ -86,6 +86,14 @@ class GameParameters:
         self.live_numb = 3
         self.running = True
         self.allow_fire = False
+        self.points = 0
+
+    def show_point(self, screen):
+        font = pygame.font.SysFont('', 20)
+        points = font.render(str(self.points), True, pygame.Color(0, 255,0))
+        rect = points.get_rect()
+        rect.move_ip(200, 100)
+        screen.blit(points, rect)
 
 def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
                  game_parameters):
@@ -107,7 +115,9 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship)
     run_objects.extend(aliens_objects.bombs)
     for obj in run_objects:
-        obj.move()
+        is_hit = obj.move()
+        if is_hit:
+            game_parameters.points += 10
     pause_on_hit = False
     for bomb in aliens_objects.bombs:
         if bomb.is_hit():
@@ -128,6 +138,7 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
     for obj in run_objects:
         obj.draw()
     show_lives(game_parameters.live_numb, screen)
+    game_parameters.show_point(screen)
     end_bullets = {b for b in ship_objects.bullets if not b.visible}
     ship_objects.bullets -= end_bullets
     bombs = aliens_objects.bombs
@@ -158,7 +169,6 @@ if __name__ == '__main__':
         main_in_loop(screen, time_struct, ship_objects,
                      aliens_objects,
                      game_parameters)
-        print(game_parameters.allow_fire)
         if game_parameters.live_numb <= 0:
             game_parameters.running = False
     gameover_page(screen)

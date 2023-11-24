@@ -66,7 +66,8 @@ class Missile():
             self.rect.move_ip(self.speed)
         if self.rect.midbottom[1] <= 0:
             self.visible = False
-        self.is_hit()
+        hit = self.is_hit()
+        return hit
 
 
     def draw(self):
@@ -77,13 +78,15 @@ class Missile():
         self.visible = True
 
     def is_hit(self):
+        al_del = None
         for al in self.aliens:
             if al.rect.colliderect(self.rect):
                 self.visible = False
                 al.show = False
-        al_del = {al for al in self.aliens if not al.show}
-        for al in al_del:
-            self.aliens.remove(al)
+                al_del = al
+        if al_del:
+            self.aliens.remove(al_del)
+            return True
 
 class Bomb():
     current_frame = pygame.image.load(
