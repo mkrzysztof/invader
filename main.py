@@ -2,6 +2,7 @@ from pathlib import Path
 import random
 import pygame
 import game_objects
+import board
 from collections import namedtuple
 
 Position = namedtuple('Position', ['x', 'y'])
@@ -12,6 +13,11 @@ ALLOWFIRE = pygame.event.custom_type()
 
 
 ALIEN_BOMB_FREQUECY = 1000
+
+alien_on_board = """oxxxxxxxxx
+xxxxxxxxxo
+xoxoxoxoxo
+xxooxxooxx"""
 
 def init_aliens(aliens, ship):
     ALIEN_BEGIN = Position(x =100, y=100)
@@ -177,7 +183,10 @@ if __name__ == '__main__':
     path = Path('images').joinpath('alien1.png')
     aliens_objects = AliensObjects()
     ship_objects = ShipObjects(screen)
-    init_aliens(aliens_objects.aliens, ship_objects.ship)
+    # init_aliens(aliens_objects.aliens, ship_objects.ship)
+    gb = board.GameBoard(aliens_objects.aliens, alien_on_board,
+                         screen, ship_objects.ship)
+    gb.put()
     while game_parameters.running:
         main_in_loop(screen, time_struct, ship_objects,
                      aliens_objects,
