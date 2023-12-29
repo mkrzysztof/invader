@@ -51,10 +51,10 @@ class Ship():
 class Missile():
     current_frame = pygame.image.load(
             Path('images').joinpath('missile.png'))
-    def __init__(self, screen, ship, aliens):
-        position = pygame.Vector2(ship.rect.midtop)
+    def __init__(self, screen, position, aliens):
+        self.position = position
         self.rect = self.current_frame.get_rect()
-        self.rect.move_ip(position)
+        self.rect.move_ip(self.position)
         self.speed = pygame.Vector2(0, -3)
         self.screen = screen
         self.visible = False

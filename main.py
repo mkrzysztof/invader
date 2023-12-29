@@ -111,7 +111,8 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
     if game_parameters.allow_fire:
         game_parameters.allow_fire = False
         if pygame.key.get_pressed()[pygame.K_SPACE]:
-            bullet = game_objects.Missile(screen, ship_objects.ship, aliens_objects.aliens)
+            bullet = game_objects.Missile(screen,
+                                          pygame.Vector2(ship_objects.ship.rect.midtop), aliens_objects.aliens)
             bullet.fire()
             ship_objects.bullets.add(bullet)
     run_objects.extend(ship_objects.bullets)
