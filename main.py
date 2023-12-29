@@ -41,6 +41,7 @@ def show_lives(n, screen):
     
 
 def welcome_page(screen):
+    pygame.event.clear()
     screen.fill('black')
     def_font_name =  pygame.font.get_default_font()
     font = pygame.font.SysFont(def_font_name, 20)
@@ -49,6 +50,7 @@ def welcome_page(screen):
     rect = surf.get_rect()
     rect.move_ip(100, 100)
     screen.blit(surf, rect)
+    pygame.display.flip()
     while running:
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
@@ -63,11 +65,13 @@ def gameover_page(screen):
     rect = surf.get_rect()
     rect.move_ip(200, 200)
     screen.blit(surf, rect)
+    pygame.display.flip()
     while running:
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             running = False
-        pygame.display.flip()
+    pygame.time.delay(1000)
+    
     
 class TimeStruct:
     def __init__(self):
@@ -111,8 +115,10 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
     if game_parameters.allow_fire:
         game_parameters.allow_fire = False
         if pygame.key.get_pressed()[pygame.K_SPACE]:
+            missile_position = pygame.Vector2(ship_objects.ship.rect.midtop)
             bullet = game_objects.Missile(screen,
-                                          pygame.Vector2(ship_objects.ship.rect.midtop), aliens_objects.aliens)
+                                          missile_position,
+                                          aliens_objects.aliens)
             bullet.fire()
             ship_objects.bullets.add(bullet)
     run_objects.extend(ship_objects.bullets)
@@ -158,6 +164,7 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
 if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
+    pygame.key.set_repeat()
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
