@@ -122,7 +122,7 @@ class Bomb():
 
 class Alien():
     possible_move = 20
-    def __init__(self, path, screen, position, ship):
+    def __init__(self, path, screen, position):
         self.screen = screen
         self.current_frame = pygame.image.load(path)
         self.rect = self.current_frame.get_rect()

@@ -168,7 +168,7 @@ if __name__ == '__main__':
         aliens_objects = AliensObjects()
         ship_objects = ShipObjects(screen)
         gb = board.GameBoard(aliens_objects.aliens, alien_on_board,
-                             screen, ship_objects.ship)
+                             screen)
         gb.put()
         while game_parameters.running:
             main_in_loop(screen, time_struct, ship_objects,

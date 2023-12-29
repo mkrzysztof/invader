@@ -8,7 +8,7 @@ SPACE_BETWEEN_ALIENS = 50
 PATH = Path('images').joinpath('alien1.png')
 
 class GameBoard:
-    def __init__(self, aliens, str_board, screen, ship):
+    def __init__(self, aliens, str_board, screen):
         self.aliens = aliens
         self.str_board = str_board.splitlines()
         self.position = copy(ALIEN_BEGIN)
@@ -20,7 +20,7 @@ class GameBoard:
         
         for char in line:
             if char == 'x':
-                self.aliens.add(Alien(PATH, self.screen, self.position, self.ship))
+                self.aliens.add(Alien(PATH, self.screen, self.position)
             self.position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)               
     def put(self):
         for line in self.str_board:
