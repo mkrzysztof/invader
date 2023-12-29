@@ -19,22 +19,6 @@ xxxxxxxxxo
 xoxoxoxoxo
 xxooxxooxx"""
 
-def init_aliens(aliens, ship):
-    ALIEN_BEGIN = Position(x =100, y=100)
-    SPACE_BETWEEN_ALIENS = 50
-    HORIZONT_ALIENS_NUMBER = 10
-    VERTICAL_ALIENS_NUMBER = 4
-    for posx in range(ALIEN_BEGIN.x,
-                      ALIEN_BEGIN.x
-                      + SPACE_BETWEEN_ALIENS * HORIZONT_ALIENS_NUMBER,
-                      SPACE_BETWEEN_ALIENS):
-        for posy in range(ALIEN_BEGIN.y,
-                          ALIEN_BEGIN.y
-                          + SPACE_BETWEEN_ALIENS * VERTICAL_ALIENS_NUMBER,
-                          SPACE_BETWEEN_ALIENS):
-            aliens.add(game_objects.Alien(path, screen,
-                                          pygame.Vector2(posx, posy),
-                                          ship))
 
 def bomb_fall(aliens, bombs, ship):
     for alien in aliens:
@@ -176,22 +160,21 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
-    game_parameters = GameParameters()
-    welcome_page(screen)
-    time_struct = TimeStruct()
-    pygame.time.set_timer(ALLOWFIRE, 100)
-    path = Path('images').joinpath('alien1.png')
-    aliens_objects = AliensObjects()
-    ship_objects = ShipObjects(screen)
-    # init_aliens(aliens_objects.aliens, ship_objects.ship)
-    gb = board.GameBoard(aliens_objects.aliens, alien_on_board,
-                         screen, ship_objects.ship)
-    gb.put()
-    while game_parameters.running:
-        main_in_loop(screen, time_struct, ship_objects,
-                     aliens_objects,
-                     game_parameters)
-        if game_parameters.live_numb <= 0:
-            game_parameters.running = False
-    gameover_page(screen)
+    while True:
+        game_parameters = GameParameters()
+        welcome_page(screen)
+        time_struct = TimeStruct()
+        pygame.time.set_timer(ALLOWFIRE, 100)
+        aliens_objects = AliensObjects()
+        ship_objects = ShipObjects(screen)
+        gb = board.GameBoard(aliens_objects.aliens, alien_on_board,
+                             screen, ship_objects.ship)
+        gb.put()
+        while game_parameters.running:
+            main_in_loop(screen, time_struct, ship_objects,
+                         aliens_objects,
+                         game_parameters)
+            if game_parameters.live_numb <= 0:
+                game_parameters.running = False
+        gameover_page(screen)
     pygame.quit()
