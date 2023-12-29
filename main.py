@@ -55,7 +55,6 @@ def welcome_page(screen):
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             running = False
-        pygame.display.flip()
 
 def gameover_page(screen):
     def_font_name =  pygame.font.get_default_font()
