@@ -13,14 +13,13 @@ class GameBoard:
         self.str_board = str_board.splitlines()
         self.position = copy(ALIEN_BEGIN)
         self.screen = screen
-        self.ship = ship
         
     def put_in_row(self, line):
         self.position.x = ALIEN_BEGIN.x
         
         for char in line:
             if char == 'x':
-                self.aliens.add(Alien(PATH, self.screen, self.position)
+                self.aliens.add(Alien(PATH, self.screen, self.position))
             self.position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)               
     def put(self):
         for line in self.str_board:

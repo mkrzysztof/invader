@@ -56,7 +56,6 @@ class Missile():
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(position)
         self.speed = pygame.Vector2(0, -3)
-        self.ship = ship
         self.screen = screen
         self.visible = False
         self.aliens = aliens
