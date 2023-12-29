@@ -128,7 +128,7 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
             pause_on_hit = True
             break
     for alien in aliens_objects.aliens:
-        if alien.touch_ship():
+        if alien.touch_ship(ship_objects.ship):
             aliens_objects.aliens -= {alien}
             game_parameters.live_numb -= 1
             pause_on_hit = True

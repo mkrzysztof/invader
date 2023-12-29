@@ -133,7 +133,6 @@ class Alien():
         self.show = True
         self.is_fallen = False
         self.is_out = False
-        self.ship = ship
 
     def fallen(self): 
         if random.randint(1, 1000) == 6:
@@ -160,9 +159,9 @@ class Alien():
                 self.rect.left <= self.initial_rect.x - self.possible_move):
                 self.speed = -self.speed
 
-    def touch_ship(self):
-        if self.rect.colliderect(self.ship.rect):
-            self.ship.current_frame = self.ship.boom
+    def touch_ship(self, ship):
+        if self.rect.colliderect(ship.rect):
+            ship.current_frame = ship.boom
             return True
         
 
