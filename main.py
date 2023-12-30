@@ -14,13 +14,17 @@ ALLOWFIRE = pygame.event.custom_type()
 
 ALIEN_BOMB_FREQUECY = 1000
 
-alien_on_board = """oxxxxxxxxx
+alien_on_board = [
+"""oxxxxxxxxx
 xxxxxxxxxo
 xoxoxoxoxo
-xxooxxooxx"""
+xxooxxooxx""",
+"""xoxoxoxoxo
+xxooooooxx
+xxxxxxxxxx""",
+    ]
 
-
-def bomb_fall(aliens, bombs, ship):
+def bomb_fall(aliens, bombs, ship, screen):
     for alien in aliens:
         if random.randint(0, ALIEN_BOMB_FREQUECY) == 1:
             bomb = game_objects.Bomb(screen, alien, ship)
@@ -69,7 +73,7 @@ def gameover_page(screen):
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             running = False
-    pygame.time.delay(1000)
+    pygame.time.delay(500)
     
     
 class TimeStruct:
@@ -87,12 +91,34 @@ class AliensObjects:
         self.aliens = set()
         self.bombs = set()
 
+    def fall(self):
+        for alien in {al for al in self.aliens if not al.is_fallen}:
+            alien.fallen()
+
+    def put_to_start_position(self):
+        for alien in self.aliens:
+            alien.put_to_start_pos()
+
+    def bombs_fall(self, screen, ship):
+        for alien in self.aliens:
+            if random.randint(0, ALIEN_BOMB_FREQUECY) == 1:
+                bomb = game_objects.Bomb(screen, alien, ship)
+                bomb.fire
+        
+
 class GameParameters:
     def __init__(self):
         self.live_numb = 3
         self.running = True
         self.allow_fire = False
         self.points = 0
+
+    def event_catch(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_parameters.running = False
+            if event.type == ALLOWFIRE:
+                game_parameters.allow_fire = True
 
     def show_point(self, screen):
         font = pygame.font.SysFont('', 20)
@@ -106,11 +132,7 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
     run_objects = []
     run_objects.append(ship_objects.ship)
     run_objects.extend(aliens_objects.aliens)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game_parameters.running = False
-        if event.type == ALLOWFIRE:
-            game_parameters.allow_fire = True
+    game_parameters.event_catch()
     if game_parameters.allow_fire:
         game_parameters.allow_fire = False
         if pygame.key.get_pressed()[pygame.K_SPACE]:
@@ -121,7 +143,8 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
             bullet.fire()
             ship_objects.bullets.add(bullet)
     run_objects.extend(ship_objects.bullets)
-    bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship)
+    bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
+              screen)
     run_objects.extend(aliens_objects.bombs)
     for obj in run_objects:
         is_hit = obj.move()
@@ -139,10 +162,8 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
             game_parameters.live_numb -= 1
             pause_on_hit = True
             break
-    for alien in {al for al in aliens_objects.aliens if not al.is_fallen}:
-        alien.fallen()
-    for alien in aliens_objects.aliens:
-        alien.alien_is_out()
+    aliens_objects.fall()
+    aliens_objects.put_to_start_position()
     screen.fill('black')
     for obj in run_objects:
         obj.draw()
@@ -167,21 +188,28 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((640, 480),
                                      # pygame.FULLSCREEN
                                      )
+    board_numb = 0
     while True:
-        game_parameters = GameParameters()
         welcome_page(screen)
-        time_struct = TimeStruct()
-        pygame.time.set_timer(ALLOWFIRE, 100)
-        aliens_objects = AliensObjects()
-        ship_objects = ShipObjects(screen)
-        gb = board.GameBoard(aliens_objects.aliens, alien_on_board,
+        game_parameters = GameParameters()
+        for brd in alien_on_board:
+            time_struct = TimeStruct()
+            pygame.time.set_timer(ALLOWFIRE, 100)
+            aliens_objects = AliensObjects()
+            ship_objects = ShipObjects(screen)
+            gb = board.GameBoard(aliens_objects.aliens,
+                                 brd,
                              screen)
-        gb.put()
-        while game_parameters.running:
-            main_in_loop(screen, time_struct, ship_objects,
-                         aliens_objects,
-                         game_parameters)
-            if game_parameters.live_numb <= 0:
-                game_parameters.running = False
-        gameover_page(screen)
+            gb.put()
+            while game_parameters.running:
+                main_in_loop(screen, time_struct, ship_objects,
+                             aliens_objects,
+                             game_parameters)
+                if game_parameters.live_numb <= 0:
+                    game_parameters.running = False
+                if not aliens_objects.aliens:
+                    board_numb += 1
+                    break
+                if not game_parameters.running:
+                    gameover_page(screen)
     pygame.quit()

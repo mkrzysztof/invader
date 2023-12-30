@@ -136,7 +136,7 @@ class Alien():
             self.is_fallen = True
             self.speed = self.fallen_speed
 
-    def alien_is_out(self):
+    def put_to_start_pos(self):
         if self.rect.topleft[1] >= self.screen.get_height():
             self.is_out = True
             self.rect = pygame.Rect(self.initial_rect)
