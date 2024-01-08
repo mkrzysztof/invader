@@ -2,6 +2,7 @@ from pathlib import Path
 from os import path
 import random
 import pygame
+from pygame import gfxdraw
 import game_objects
 import board
 from collections import namedtuple
@@ -57,9 +58,12 @@ def welcome_page(screen):
     screen.blit(surf, rect)
     pygame.display.flip()
     while running:
+        for event in pygame.event.get():
+            if event.type == pygame.FINGERDOWN:
+                running = False
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
-            running = False
+            running = False      
 
 def gameover_page(screen):
     def_font_name =  pygame.font.get_default_font()
@@ -108,11 +112,34 @@ class AliensObjects:
         
 
 class GameParameters:
-    def __init__(self):
+    def __init__(self, screen):
         self.live_numb = 3
         self.running = True
         self.allow_fire = False
         self.points = 0
+        self.left_rect = None
+        self.right_rect = None
+        self.background = None
+        self._draw_background(screen)
+
+    def _draw_background(self, screen):
+        rect_screen = screen.get_rect()
+        pos_left_rect = (
+            (rect_screen.bottomleft[0] + rect_screen.midbottom[0])/2,
+            (rect_screen.midleft[1] + rect_screen.bottomleft[1])/2
+        )
+        pos_right_rect = (
+            (rect_screen.midbottom[0] + rect_screen.bottomright[0])/2,
+            (rect_screen.midbottom[1] + rect_screen.center[1])/2
+        )
+        self.background = pygame.Surface(rect_screen.size)
+        self.background.fill('black')
+        size = (20, 20)
+        self.left_rect = pygame.Rect(pos_left_rect, size)
+        self.right_rect = pygame.Rect(pos_right_rect, size)
+        gfxdraw.box(self.background, self.left_rect, pygame.Color('gold'))
+        gfxdraw.box(self.background, self.right_rect, pygame.Color('gold'))
+        
 
     def event_catch(self):
         for event in pygame.event.get():
@@ -157,15 +184,16 @@ def main_in_loop(screen, time_struct, ship_objects, aliens_objects,
             game_parameters.live_numb -= 1
             pause_on_hit = True
             break
+    aliens_hit = set()
     for alien in aliens_objects.aliens:
         if alien.touch_ship(ship_objects.ship):
-            aliens_objects.aliens -= {alien}
+            aliens_hit |= {alien}
             game_parameters.live_numb -= 1
             pause_on_hit = True
-            break
-    aliens_objects.fall()
+    aliens_objects.aliens -= aliens_hit
+    aliens_objects.fall()                                                          
     aliens_objects.put_to_start_position()
-    screen.fill('black')
+    screen.blit(game_parameters.background, (0, 0))
     for obj in run_objects:
         obj.draw()
     show_lives(game_parameters.live_numb, screen)
@@ -187,12 +215,12 @@ if __name__ == '__main__':
     pygame.font.init()
     pygame.key.set_repeat()
     screen = pygame.display.set_mode((640, 480),
-                                     # pygame.FULLSCREEN
+                                     pygame.FULLSCREEN | pygame.SCALED
                                      )
     board_numb = 0
     while True:
         welcome_page(screen)
-        game_parameters = GameParameters()
+        game_parameters = GameParameters(screen)
         for brd in alien_on_board:
             time_struct = TimeStruct()
             pygame.time.set_timer(ALLOWFIRE, 100)
