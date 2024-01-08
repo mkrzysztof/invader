@@ -1,4 +1,5 @@
 from pathlib import Path
+from os import path
 import random
 import pygame
 import game_objects
@@ -34,8 +35,8 @@ def bomb_fall(aliens, bombs, ship, screen):
 def show_lives(n, screen):
     POS = Position(x=50, y=50)
     SPACE = 20
-    path = Path('images')
-    ship_path = path.joinpath('ship_straight.png')
+    pth = Path(path.abspath('images'))
+    ship_path = pth.joinpath('ship_straight.png')
     img_ship = pygame.image.load(ship_path)
     posx = POS.x
     for i in range(0, n):

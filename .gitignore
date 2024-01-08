@@ -1,2 +1,8 @@
 __pycache__/
 *~
+.buildozer/
+bin/
+build/
+dist/
+buildozer.spec
+\#*\#

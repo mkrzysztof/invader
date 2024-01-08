@@ -1,11 +1,12 @@
 from game_objects import Alien
+from os import path
 from pathlib import Path
 from copy import copy
 import pygame
 
 ALIEN_BEGIN = pygame.Vector2(100, 100)
 SPACE_BETWEEN_ALIENS = 50
-PATH = Path('images').joinpath('alien1.png')
+PATH = Path(path.abspath('images')).joinpath('alien1.png')
 
 class GameBoard:
     def __init__(self, aliens, str_board, screen):

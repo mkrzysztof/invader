@@ -1,3 +1,4 @@
+from os import path
 from  pathlib import Path
 import random
 
@@ -8,21 +9,21 @@ random.seed()
 
 class Ship():
     def __init__(self, screen):
-        path = Path('images')
+        pth = Path(path.abspath('images'))
         screen_width = screen.get_width()
         screen_height = screen.get_height()
         self.rect = pygame.Rect(screen_width//2, screen_height-20, 20, 20)
         self.speed = pygame.Vector2(1, 0)
         self.screen = screen
         self.ships = {}
-        ship_path = path.joinpath('ship_straight.png')
+        ship_path = pth.joinpath('ship_straight.png')
         self.ships['straight'] = pygame.image.load(ship_path)
-        ship_path = path.joinpath('ship_left.png')
+        ship_path = pth.joinpath('ship_left.png')
         self.ships['left'] = pygame.image.load(ship_path)
-        ship_path = path.joinpath('ship_right.png')
+        ship_path = pth.joinpath('ship_right.png')
         self.ships['right'] = pygame.image.load(ship_path)
         self.current_frame = self.ships['straight']
-        boom_path = path.joinpath('boom.png')
+        boom_path = pth.joinpath('boom.png')
         self.boom = pygame.image.load(boom_path)
         self.allow_move = False
 
@@ -49,7 +50,7 @@ class Ship():
 
 class Missile():
     current_frame = pygame.image.load(
-            Path('images').joinpath('missile.png'))
+            Path(path.abspath('images')).joinpath('missile.png'))
     def __init__(self, screen, position, aliens):
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(position)
@@ -87,7 +88,7 @@ class Missile():
 
 class Bomb():
     current_frame = pygame.image.load(
-            Path('images').joinpath('missile.png'))
+            Path(path.abspath('images')).joinpath('missile.png'))
     def __init__(self, screen, alien, ship):
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(alien.rect.midbottom)
