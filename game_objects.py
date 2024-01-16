@@ -3,6 +3,7 @@ from  pathlib import Path
 import random
 
 import pygame
+from pygame._sdl2 import touch
 
 random.seed()
 
@@ -26,6 +27,7 @@ class Ship():
         boom_path = pth.joinpath('boom.png')
         self.boom = pygame.image.load(boom_path)
         self.allow_move = False
+        self.pos = self.rect.topleft[0]
 
     def draw(self):
         self.screen.blit(self.current_frame, self.rect)
@@ -39,6 +41,20 @@ class Ship():
             self.current_frame = self.ships['right']
         else:
             self.current_frame = self.ships['straight']
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                print(event)
+                relative = event.pos[0] - self.pos
+                absrel = abs(relative)
+                if relative < 0:
+                    self.rect = self.rect.move(-absrel * self.speed)
+                    self.current_frame = self.ships['left']
+                elif relative > 0:
+                    self.rect = self.rect.move(absrel * self.speed)
+                    self.current_frame = self.ships['right']
+                else:
+                    self.current_frame = self.ships['straight']
+                self.pos = event.pos[0]
         right_pos = self.rect.right
         left_pos = self.rect.left
         rect_screen = self.screen.get_rect()
@@ -85,6 +101,7 @@ class Missile():
         if al_del:
             self.aliens.remove(al_del)
             return True
+        return False
 
 class Bomb():
     current_frame = pygame.image.load(
@@ -108,6 +125,7 @@ class Bomb():
             self.visible = False
             self.ship.current_frame = self.ship.boom
             return True
+        return False
 
     def fire(self):
         self.visible = True
@@ -120,9 +138,9 @@ class Bomb():
 
 class Alien():
     possible_move = 20
-    def __init__(self, path, screen, position):
+    def __init__(self, img_path, screen, position):
         self.screen = screen
-        self.current_frame = pygame.image.load(path)
+        self.current_frame = pygame.image.load(img_path)
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(position)
         self.initial_rect = pygame.Rect(self.rect)
@@ -132,7 +150,7 @@ class Alien():
         self.is_fallen = False
         self.is_out = False
 
-    def fallen(self): 
+    def fallen(self):
         if random.randint(1, 1000) == 6:
             self.is_fallen = True
             self.speed = self.fallen_speed
@@ -143,14 +161,13 @@ class Alien():
             self.rect = pygame.Rect(self.initial_rect)
             self.is_fallen = False
             self.speed = pygame.Vector2(self.speed.x, 0)
-        
 
     def move(self):
         if self.is_fallen:
             self.rect.move_ip(self.speed)
             if (self.rect.left <= 0
                 or self.rect.right > self.screen.get_width()):
-                self.speed = pygame.Vector2(-self.speed.x, self.speed.y)
+                self.speed = pygame.Vector2(0-self.speed.x, self.speed.y)
         else:
             self.rect.move_ip(self.speed)
             if (self.rect.right >= self.initial_rect.x + self.possible_move or
@@ -161,8 +178,7 @@ class Alien():
         if self.rect.colliderect(ship.rect):
             ship.current_frame = ship.boom
             return True
-        
-
+        return False
 
     def draw(self):
         self.screen.blit(self.current_frame, self.rect)

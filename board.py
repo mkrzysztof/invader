@@ -1,8 +1,9 @@
-from game_objects import Alien
+from copy import copy
 from os import path
 from pathlib import Path
-from copy import copy
 import pygame
+from game_objects import Alien
+
 
 ALIEN_BEGIN = pygame.Vector2(100, 100)
 SPACE_BETWEEN_ALIENS = 50
@@ -14,14 +15,14 @@ class GameBoard:
         self.str_board = str_board.splitlines()
         self.position = copy(ALIEN_BEGIN)
         self.screen = screen
-        
+
     def put_in_row(self, line):
         self.position.x = ALIEN_BEGIN.x
-        
         for char in line:
             if char == 'x':
                 self.aliens.add(Alien(PATH, self.screen, self.position))
-            self.position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)               
+            self.position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)
+
     def put(self):
         for line in self.str_board:
             self.put_in_row(line)
