@@ -55,6 +55,8 @@ class Ship():
                 else:
                     self.current_frame = self.ships['straight']
                 self.pos = event.pos[0]
+            else:
+                pygame.event.post(event)
         right_pos = self.rect.right
         left_pos = self.rect.left
         rect_screen = self.screen.get_rect()

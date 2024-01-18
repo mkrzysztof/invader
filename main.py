@@ -144,8 +144,10 @@ class GameParameters:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == ALLOWFIRE:
+            elif event.type == ALLOWFIRE:
                 self.allow_fire = True
+            else:
+                pygame.event.post(event)
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
@@ -221,7 +223,7 @@ if __name__ == '__main__':
     pygame.font.init()
     pygame.key.set_repeat()
     screen = pygame.display.set_mode((640, 480),
-                                     # pygame.FULLSCREEN | pygame.SCALED
+                                     pygame.FULLSCREEN | pygame.SCALED
                                      )
     board_numb = 0
     while True:
