@@ -167,24 +167,21 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
             bullet.fire()
             objs_ship.bullets.add(bullet)
 
-def move_objects(run_objects, parameters_game):
-    for obj in run_objects:
-        is_hit = obj.move()
-        if is_hit:
-            parameters_game.points += 10
-
 def main_in_loop(display, time_struct, ship_objects, aliens_objects,
                  parameters_game):
-    run_objects = []
-    run_objects.append(ship_objects.ship)
-    run_objects.extend(aliens_objects.aliens)
     game_parameters.event_catch()
     ship_fire(game_parameters, game_objects, aliens_objects, ship_objects)
-    run_objects.extend(ship_objects.bullets)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
               display)
-    run_objects.extend(aliens_objects.bombs)
-    move_objects(run_objects, parameters_game)
+    for alien in aliens_objects.aliens:
+        alien.move()
+    for bomb in aliens_objects.bombs:
+        bomb.move()
+    ship_objects.ship.move()
+    for bullet in ship_objects.bullets:
+        is_hit = bullet.move()
+        if is_hit:
+            game_parameters.points += 10
     pause_on_hit = False
     for bomb in aliens_objects.bombs:
         if bomb.is_hit():
@@ -201,8 +198,13 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     aliens_objects.fall()
     aliens_objects.put_to_start_position()
     display.blit(parameters_game.background, (0, 0))
-    for obj in run_objects:
-        obj.draw()
+    for alien in aliens_objects.aliens:
+        alien.draw()
+    ship_objects.ship.draw()
+    for bullet in ship_objects.bullets:
+        bullet.draw()
+    for bomb in aliens_objects.bombs:
+        bomb.draw()
     show_lives(parameters_game.live_numb, display)
     parameters_game.show_point(display)
     end_bullets = {b for b in ship_objects.bullets if not b.visible}
@@ -223,7 +225,7 @@ if __name__ == '__main__':
     pygame.font.init()
     pygame.key.set_repeat()
     screen = pygame.display.set_mode((640, 480),
-                                     pygame.FULLSCREEN | pygame.SCALED
+                                     # pygame.FULLSCREEN | pygame.SCALED
                                      )
     board_numb = 0
     while True:
