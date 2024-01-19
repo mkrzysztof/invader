@@ -200,10 +200,10 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     aliens_hit = set()
     for alien in aliens_objects.aliens:
         if alien.touch_ship(ship_objects.ship):
-            aliens_hit |= {alien}
+            aliens_hit.add(alien)
             parameters_game.live_numb -= 1
             pause_on_hit = True
-    aliens_objects.aliens -= aliens_hit
+    aliens_objects.aliens.difference_update(aliens_hit)
     aliens_objects.fall()
     aliens_objects.put_to_start_position()
     display.blit(parameters_game.background, (0, 0))
@@ -213,9 +213,9 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     show_lives(parameters_game.live_numb, display)
     parameters_game.show_point(display)
     end_bullets = {b for b in ship_objects.bullets if not b.visible}
-    ship_objects.bullets -= end_bullets
+    ship_objects.bullets.difference_update(end_bullets)
     end_bombs = {bomb for bomb in aliens_objects.bombs if not bomb.visible}
-    aliens_objects.bombs -= end_bombs
+    aliens_objects.bombs.difference_update(end_bombs)
     time_struct.delta += time_struct.clock.tick(MAX_FPS)/1000
     while time_struct.delta > 1.0/FPS:
         time_struct.delta -= 1.0/FPS

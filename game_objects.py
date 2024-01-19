@@ -31,6 +31,7 @@ class Ship():
         self.screen.blit(self.current_frame, self.rect)
 
     def move(self, step):
+        self.current_frame = self.ships['straight']
         if step is not None:
             if step == -1:
                 self.rect.move_ip(-self.speed)
