@@ -3,7 +3,6 @@ from  pathlib import Path
 import random
 
 import pygame
-from pygame._sdl2 import touch
 
 random.seed()
 
@@ -27,43 +26,18 @@ class Ship():
         boom_path = pth.joinpath('boom.png')
         self.boom = pygame.image.load(boom_path)
         self.allow_move = False
-        self.pos = self.rect.topleft[0]
 
     def draw(self):
         self.screen.blit(self.current_frame, self.rect)
 
-    def move(self):
-        if pygame.key.get_pressed()[pygame.K_LEFT]:
-            self.rect = self.rect.move(-self.speed)
-            self.current_frame = self.ships['left']
-        elif pygame.key.get_pressed()[pygame.K_RIGHT]:
-            self.rect = self.rect.move(self.speed)
-            self.current_frame = self.ships['right']
-        else:
-            self.current_frame = self.ships['straight']
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEMOTION:
-                print(event)
-                relative = event.pos[0] - self.pos
-                absrel = abs(relative)
-                if relative < 0:
-                    self.rect = self.rect.move(-absrel * self.speed)
-                    self.current_frame = self.ships['left']
-                elif relative > 0:
-                    self.rect = self.rect.move(absrel * self.speed)
-                    self.current_frame = self.ships['right']
-                else:
-                    self.current_frame = self.ships['straight']
-                self.pos = event.pos[0]
-            else:
-                pygame.event.post(event)
-        right_pos = self.rect.right
-        left_pos = self.rect.left
-        rect_screen = self.screen.get_rect()
-        if right_pos >= rect_screen.right:
-            self.rect = self.rect.move(rect_screen.right - right_pos, 0)
-        if left_pos <= rect_screen.left:
-            self.rect = self.rect.move(rect_screen.left - left_pos, 0)
+    def move(self, step):
+        if step is not None:
+            if step == -1:
+                self.rect.move_ip(-self.speed)
+                self.current_frame = self.ships['left']
+            if step == 1:
+                self.rect.move_ip(self.speed)
+                self.current_frame = self.ships['right']
 
 
 class Missile():

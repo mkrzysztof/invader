@@ -141,13 +141,24 @@ class GameParameters:
 
 
     def event_catch(self):
+        move = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
-            else:
-                pygame.event.post(event)
+            elif event.type == pygame.MOUSEMOTION:
+                relative = event.rel[0]
+                if relative > 0:
+                    move = 1
+                elif relative < 0:
+                    move = -1
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            move = -1
+        if keys[pygame.K_RIGHT]:
+            move = 1
+        return move
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
@@ -169,13 +180,13 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
 
 def main_in_loop(display, time_struct, ship_objects, aliens_objects,
                  parameters_game):
-    game_parameters.event_catch()
+    step = game_parameters.event_catch()
     ship_fire(game_parameters, game_objects, aliens_objects, ship_objects)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
               display)
     for obj in aliens_objects.aliens | aliens_objects.bombs:
         obj.move()
-    ship_objects.ship.move()
+    ship_objects.ship.move(step)
     for bullet in ship_objects.bullets:
         is_hit = bullet.move()
         if is_hit:
@@ -203,9 +214,8 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     parameters_game.show_point(display)
     end_bullets = {b for b in ship_objects.bullets if not b.visible}
     ship_objects.bullets -= end_bullets
-    bombs = aliens_objects.bombs
-    end_bombs = {bomb for bomb in bombs if not bomb.visible}
-    bombs -= end_bombs
+    end_bombs = {bomb for bomb in aliens_objects.bombs if not bomb.visible}
+    aliens_objects.bombs -= end_bombs
     time_struct.delta += time_struct.clock.tick(MAX_FPS)/1000
     while time_struct.delta > 1.0/FPS:
         time_struct.delta -= 1.0/FPS
