@@ -173,10 +173,8 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     ship_fire(game_parameters, game_objects, aliens_objects, ship_objects)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
               display)
-    for alien in aliens_objects.aliens:
-        alien.move()
-    for bomb in aliens_objects.bombs:
-        bomb.move()
+    for obj in aliens_objects.aliens | aliens_objects.bombs:
+        obj.move()
     ship_objects.ship.move()
     for bullet in ship_objects.bullets:
         is_hit = bullet.move()
@@ -198,13 +196,9 @@ def main_in_loop(display, time_struct, ship_objects, aliens_objects,
     aliens_objects.fall()
     aliens_objects.put_to_start_position()
     display.blit(parameters_game.background, (0, 0))
-    for alien in aliens_objects.aliens:
-        alien.draw()
-    ship_objects.ship.draw()
-    for bullet in ship_objects.bullets:
-        bullet.draw()
-    for bomb in aliens_objects.bombs:
-        bomb.draw()
+    for obj in (aliens_objects.aliens | {ship_objects.ship} |
+                ship_objects.bullets | aliens_objects.bombs):
+        obj.draw()
     show_lives(parameters_game.live_numb, display)
     parameters_game.show_point(display)
     end_bullets = {b for b in ship_objects.bullets if not b.visible}
