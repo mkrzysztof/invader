@@ -229,7 +229,7 @@ if __name__ == '__main__':
     pygame.font.init()
     pygame.key.set_repeat()
     screen = pygame.display.set_mode((640, 480),
-                                     # pygame.FULLSCREEN | pygame.SCALED
+                                     pygame.FULLSCREEN | pygame.SCALED
                                      )
     board_numb = 0
     while True:
