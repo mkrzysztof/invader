@@ -86,9 +86,9 @@ class TimeStruct:
         self.clock = pygame.time.Clock()
 
 class ShipObjects:
-    def __init__(self, display):
+    def __init__(self, display, screen_fields):
         self.bullets = set()
-        self.ship = game_objects.Ship(display)
+        self.ship = game_objects.Ship(display, screen_fields)
 
 class AliensObjects:
     def __init__(self, aliens):
@@ -235,7 +235,7 @@ if __name__ == '__main__':
         game_parameters = GameParameters(gb.screen)
         welcome_page(gb.screen)
         timer = TimeStruct()
-        ship_items = ShipObjects(gb.screen)
+        ship_items = ShipObjects(gb.screen, gb.screen_fields)
         for alien_brd in alien_on_board:
             print(f'alien-brd = {alien_brd}')
             gb.put_one(alien_brd)

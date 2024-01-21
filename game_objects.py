@@ -8,7 +8,7 @@ random.seed()
 
 
 class Ship():
-    def __init__(self, screen):
+    def __init__(self, screen, screen_fields):
         pth = Path(path.abspath('images'))
         screen_width = screen.get_width()
         screen_height = screen.get_height()
@@ -26,19 +26,23 @@ class Ship():
         boom_path = pth.joinpath('boom.png')
         self.boom = pygame.image.load(boom_path)
         self.allow_move = False
+        self.screen_fields = screen_fields
 
     def draw(self):
-        self.screen.blit(self.current_frame, self.rect)
+        self.screen.blit(self.current_frame,
+                         self.rect.move(self.screen_fields.playfield.topleft))
 
     def move(self, step):
         self.current_frame = self.ships['straight']
         if step is not None:
             if step == -1:
-                self.rect.move_ip(-self.speed)
-                self.current_frame = self.ships['left']
+                if self.rect.left >= self.screen_fields.playfield.left:
+                    self.rect.move_ip(-self.speed)
+                    self.current_frame = self.ships['left']
             if step == 1:
-                self.rect.move_ip(self.speed)
-                self.current_frame = self.ships['right']
+                if self.rect.right <= self.screen_fields.playfield.right:
+                    self.rect.move_ip(self.speed)
+                    self.current_frame = self.ships['right']
 
 
 class Missile():
