@@ -19,12 +19,6 @@ class GameBoard:
         self._playfield_size = (640, 480)
         self._firefield_size = (50, 480)
         self.screen_fields = screen_field.ScreenFields()
-        begin = (0, 0)
-        self.joyfield = pygame.Rect(begin, self.screen_fields.joyfield_size)
-        begin = (begin[0] + self.screen_fields.joyfield_size[0] + 1, begin[1])
-        self.playfield = pygame.Rect(begin, self.screen_fields.playfield_size)
-        begin = (begin[0] + self.screen_fields.playfield_size[0] + 1, begin[1])
-        self.firefield = pygame.Rect(begin, self.screen_fields.joyfield_size)
         resolution = (self.screen_fields.joyfield_size[0] +
                       self.screen_fields.playfield_size[0] +
                       self.screen_fields.firefield_size[0], 480)

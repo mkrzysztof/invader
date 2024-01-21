@@ -131,10 +131,12 @@ class Alien():
     def fallen(self):
         if random.randint(1, 1000) == 6:
             self.is_fallen = True
-            self.speed = self.fallen_speed
+            self.speed = random.choice((pygame.Vector2(2, 1),
+                                        pygame.Vector2(-2, 1))
+                                       )
 
     def put_to_start_pos(self):
-        if self.rect.topleft[1] >= self.screen_fields.playfield_size[1]:
+        if self.rect.topleft[1] >= self.screen_fields.playfield.bottom:
             self.is_out = True
             self.rect = pygame.Rect(self.initial_rect)
             self.is_fallen = False
@@ -143,8 +145,8 @@ class Alien():
     def move(self):
         if self.is_fallen:
             self.rect.move_ip(self.speed)
-            if (self.rect.left <= 0
-                or self.rect.right > self.screen.get_width()):
+            if (self.rect.left <= self.screen_fields.playfield.left
+                or self.rect.right > self.screen_fields.playfield.right):
                 self.speed = pygame.Vector2(0-self.speed.x, self.speed.y)
         else:
             self.rect.move_ip(self.speed)
@@ -159,4 +161,6 @@ class Alien():
         return False
 
     def draw(self):
-        self.screen.blit(self.current_frame, self.rect)
+        self.screen.blit(self.current_frame,
+                         self.rect.move(self.screen_fields.playfield.topleft)
+                        )
