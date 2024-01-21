@@ -36,11 +36,11 @@ class Ship():
         self.current_frame = self.ships['straight']
         if step is not None:
             if step == -1:
-                if self.rect.left >= self.screen_fields.playfield.left:
+                if self.rect.left >= 0:
                     self.rect.move_ip(-self.speed)
                     self.current_frame = self.ships['left']
             if step == 1:
-                if self.rect.right <= self.screen_fields.playfield.right:
+                if self.rect.right <= self.screen_fields.playfield_size.x:
                     self.rect.move_ip(self.speed)
                     self.current_frame = self.ships['right']
 
@@ -149,8 +149,8 @@ class Alien():
     def move(self):
         if self.is_fallen:
             self.rect.move_ip(self.speed)
-            if (self.rect.left <= self.screen_fields.playfield.left
-                or self.rect.right > self.screen_fields.playfield.right):
+            if (self.rect.left <= 0
+                or self.rect.right > self.screen_fields.playfield_size.x):
                 self.speed = pygame.Vector2(0-self.speed.x, self.speed.y)
         else:
             self.rect.move_ip(self.speed)

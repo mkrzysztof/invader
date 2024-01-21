@@ -111,7 +111,7 @@ class AliensObjects:
 
 
 class GameParameters:
-    def __init__(self, display):
+    def __init__(self, game_board):
         self.live_numb = 3
         self.running = True
         self.allow_fire = False
@@ -119,11 +119,12 @@ class GameParameters:
         self.left_rect = None
         self.right_rect = None
         self.background = None
-        self.screen = display
-        self._draw_background(display)
+        self.screen = game_board.screen
+        self.game_board = game_board
+        self._draw_background()
 
-    def _draw_background(self, display):
-        rect_screen = display.get_rect()
+    def _draw_background(self):
+        rect_screen = self.screen.get_rect()
         pos_left_rect = (
             (rect_screen.bottomleft[0] + rect_screen.midbottom[0])/2,
             (rect_screen.midleft[1] + rect_screen.bottomleft[1])/2
@@ -137,8 +138,10 @@ class GameParameters:
         size = (20, 20)
         self.left_rect = pygame.Rect(pos_left_rect, size)
         self.right_rect = pygame.Rect(pos_right_rect, size)
-        gfxdraw.box(self.background, self.left_rect, pygame.Color('gold'))
-        gfxdraw.box(self.background, self.right_rect, pygame.Color('gold'))
+        gfxdraw.box(self.background, self.game_board.screen_fields.joyfield,
+                    pygame.Color('blue'))
+        gfxdraw.box(self.background, self.game_board.screen_fields.firefield,
+                    pygame.Color('blue'))
 
 
     def event_catch(self):
@@ -232,7 +235,7 @@ if __name__ == '__main__':
     board_numb = 0
     gb = board.GameBoard(alien_on_board)
     while True:
-        game_parameters = GameParameters(gb.screen)
+        game_parameters = GameParameters(gb)
         welcome_page(gb.screen)
         timer = TimeStruct()
         ship_items = ShipObjects(gb.screen, gb.screen_fields)
