@@ -91,8 +91,8 @@ class ShipObjects:
         self.ship = game_objects.Ship(display)
 
 class AliensObjects:
-    def __init__(self):
-        self.aliens = set()
+    def __init__(self, aliens):
+        self.aliens = set(aliens)
         self.bombs = set()
 
     def fall(self):
@@ -119,6 +119,7 @@ class GameParameters:
         self.left_rect = None
         self.right_rect = None
         self.background = None
+        self.screen = display
         self._draw_background(display)
 
     def _draw_background(self, display):
@@ -172,7 +173,7 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
         param_game.allow_fire = False
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             missile_position = pygame.Vector2(objs_ship.ship.rect.midtop)
-            bullet = obj_game.Missile(screen,
+            bullet = obj_game.Missile(param_game.screen,
                                           missile_position,
                                           objs_aliens.aliens)
             bullet.fire()
@@ -228,24 +229,20 @@ if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
     pygame.key.set_repeat()
-    screen = pygame.display.set_mode((640, 480),
-                                     pygame.FULLSCREEN | pygame.SCALED
-                                     )
     board_numb = 0
+    gb = board.GameBoard(alien_on_board)
     while True:
-        welcome_page(screen)
-        game_parameters = GameParameters(screen)
+        game_parameters = GameParameters(gb.screen)
+        welcome_page(gb.screen)
         timer = TimeStruct()
-        aliens_atack = AliensObjects()
-        ship_items = ShipObjects(screen)
-        for brd in alien_on_board:
+        ship_items = ShipObjects(gb.screen)
+        for alien_brd in alien_on_board:
+            print(f'alien-brd = {alien_brd}')
+            gb.put_one(alien_brd)
+            aliens_atack = AliensObjects(gb.aliens)
             pygame.time.set_timer(ALLOWFIRE, 100)
-            gb = board.GameBoard(aliens_atack.aliens,
-                                 brd,
-                             screen)
-            gb.put()
             while game_parameters.running:
-                main_in_loop(screen, timer, ship_items,
+                main_in_loop(gb.screen, timer, ship_items,
                              aliens_atack,
                              game_parameters)
                 # if game_parameters.live_numb <= 0:
@@ -254,5 +251,5 @@ if __name__ == '__main__':
                     board_numb = + 1
                     break
                 if not game_parameters.running:
-                    gameover_page(screen)
+                    gameover_page(gb.screen)
     pygame.quit()

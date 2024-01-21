@@ -115,7 +115,7 @@ class Bomb():
 
 class Alien():
     possible_move = 20
-    def __init__(self, img_path, screen, position):
+    def __init__(self, img_path, screen, position, screen_fields):
         self.screen = screen
         self.current_frame = pygame.image.load(img_path)
         self.rect = self.current_frame.get_rect()
@@ -126,6 +126,7 @@ class Alien():
         self.show = True
         self.is_fallen = False
         self.is_out = False
+        self.screen_fields = screen_fields
 
     def fallen(self):
         if random.randint(1, 1000) == 6:
@@ -133,7 +134,7 @@ class Alien():
             self.speed = self.fallen_speed
 
     def put_to_start_pos(self):
-        if self.rect.topleft[1] >= self.screen.get_height():
+        if self.rect.topleft[1] >= self.screen_fields.playfield_size[1]:
             self.is_out = True
             self.rect = pygame.Rect(self.initial_rect)
             self.is_fallen = False
