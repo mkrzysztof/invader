@@ -142,6 +142,9 @@ class GameParameters:
                     pygame.Color('blue'))
         gfxdraw.box(self.background, self.game_board.screen_fields.firefield,
                     pygame.Color('blue'))
+        gfxdraw.filled_circle(self.background,
+                              *self.game_board.screen_fields.joyfield.center,
+                              3, pygame.Color('gold'))
 
 
     def event_catch(self):
@@ -178,7 +181,8 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
             missile_position = pygame.Vector2(objs_ship.ship.rect.midtop)
             bullet = obj_game.Missile(param_game.screen,
                                           missile_position,
-                                          objs_aliens.aliens)
+                                          objs_aliens.aliens,
+                                      param_game.game_board.screen_fields)
             bullet.fire()
             objs_ship.bullets.add(bullet)
 
