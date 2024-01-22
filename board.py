@@ -14,10 +14,7 @@ class GameBoard:
     def __init__(self, str_board_list):
         self.aliens = []
         self._str_board_list = str_board_list
-        self.position = pygame.Vector2(ALIEN_BEGIN)
-        self._joyfield_size = (50, 480)
-        self._playfield_size = (640, 480)
-        self._firefield_size = (50, 480)
+        self._position = pygame.Vector2(ALIEN_BEGIN)
         self.screen_fields = screen_field.ScreenFields()
         resolution = (self.screen_fields.joyfield_size[0] +
                       self.screen_fields.playfield_size[0] +
@@ -28,16 +25,16 @@ class GameBoard:
         print(self.screen)
 
     def put_in_row(self, line):
-        self.position.x = ALIEN_BEGIN.x
+        self._position.x = ALIEN_BEGIN.x
         for char in line:
             if char == 'x':
-                self.aliens.append(Alien(PATH, self.screen, self.position,
+                self.aliens.append(Alien(PATH, self.screen, self._position,
                                          self.screen_fields))
-            self.position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)
+            self._position += pygame.Vector2(SPACE_BETWEEN_ALIENS, 0)
 
     def put_one(self, str_board):
-        self.position = pygame.Vector2(ALIEN_BEGIN)
+        self._position = pygame.Vector2(ALIEN_BEGIN)
         self.aliens = []
         for line in str_board.splitlines():
             self.put_in_row(line)
-            self.position += pygame.Vector2(0, SPACE_BETWEEN_ALIENS)
+            self._position += pygame.Vector2(0, SPACE_BETWEEN_ALIENS)

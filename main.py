@@ -6,6 +6,7 @@ import pygame
 from pygame import gfxdraw
 import game_objects
 import board
+import screen_field
 
 Position = namedtuple('Position', ['x', 'y'])
 
@@ -119,12 +120,12 @@ class GameParameters:
         self.left_rect = None
         self.right_rect = None
         self.background = None
-        self.screen = game_board.screen
         self.game_board = game_board
         self._draw_background()
+        self._posx = game_board.screen_fields.joyfield.center[0]
 
     def _draw_background(self):
-        rect_screen = self.screen.get_rect()
+        rect_screen = self.game_board.screen.get_rect()
         pos_left_rect = (
             (rect_screen.bottomleft[0] + rect_screen.midbottom[0])/2,
             (rect_screen.midleft[1] + rect_screen.bottomleft[1])/2
@@ -149,17 +150,21 @@ class GameParameters:
 
     def event_catch(self):
         move = None
+        EPS = 3
+        scale_x = self.game_board.screen.get_width()
+        center = self.game_board.screen_fields.joyfield.center[0]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
-            elif event.type == pygame.MOUSEMOTION:
-                relative = event.rel[0]
-                if relative > 0:
-                    move = 1
-                elif relative < 0:
-                    move = -1
+            elif event.type == pygame.FINGERMOTION:
+                print(event)
+                self._posx = event.x * scale_x
+        if self._posx - center > EPS + 2:
+            move = 1
+        elif self._posx - center < -EPS - 2:
+            move = -1
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             move = -1
@@ -179,7 +184,7 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
         param_game.allow_fire = False
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             missile_position = pygame.Vector2(objs_ship.ship.rect.midtop)
-            bullet = obj_game.Missile(param_game.screen,
+            bullet = obj_game.Missile(param_game.game_board.screen,
                                           missile_position,
                                           objs_aliens.aliens,
                                       param_game.game_board.screen_fields)
