@@ -1,4 +1,5 @@
 from collections import namedtuple
+from enum import Enum, auto
 from pathlib import Path
 from os import path
 import random
@@ -9,6 +10,15 @@ import board
 import screen_field
 
 Position = namedtuple('Position', ['x', 'y'])
+
+
+class MovingType(Enum):
+    MOVE = auto()
+    FIRE = auto()
+
+
+Moving = namedtuple('Moving', ['type', 'move'])
+
 
 MAX_FPS = 100
 FPS = 30
@@ -27,10 +37,10 @@ xxooooooxx
 xxxxxxxxxx""",
     ]
 
-def bomb_fall(aliens, bombs, ship, display):
+def bomb_fall(aliens, bombs, ship, display, screen_fields):
     for alien in aliens:
         if random.randint(0, ALIEN_BOMB_FREQUECY) == 1:
-            bomb = game_objects.Bomb(display, alien, ship)
+            bomb = game_objects.Bomb(display, alien, ship, screen_fields)
             bomb.fire()
             bombs.add(bomb)
 
@@ -104,10 +114,10 @@ class AliensObjects:
         for alien in self.aliens:
             alien.put_to_start_pos()
 
-    def bombs_fall(self, display, ship):
+    def bombs_fall(self, display, ship, screen_fields):
         for alien in self.aliens:
             if random.randint(0, ALIEN_BOMB_FREQUECY) == 1:
-                bomb = game_objects.Bomb(display, alien, ship)
+                bomb = game_objects.Bomb(display, alien, ship, screen_fields)
                 bomb.fire()
 
 
@@ -149,7 +159,8 @@ class GameParameters:
 
 
     def event_catch(self):
-        move = None
+        move_type = MovingType.MOVE
+        move = 0
         EPS = 3
         scale_x = self.game_board.screen.get_width()
         center = self.game_board.screen_fields.joyfield.center[0]
@@ -158,8 +169,11 @@ class GameParameters:
                 self.running = False
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
+            elif event.type == pygame.FINGERDOWN:
+                move_type = MovingType.FIRE
             elif event.type == pygame.FINGERMOTION:
                 print(event)
+                move_type = MovingType.MOVE
                 self._posx = event.x * scale_x
         if self._posx - center > EPS + 2:
             move = 1
@@ -168,9 +182,13 @@ class GameParameters:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             move = -1
+            move_type = MovingType.MOVE
         if keys[pygame.K_RIGHT]:
             move = 1
-        return move
+            move_type = MovingType.MOVE
+        if keys[pygame.K_SPACE]:
+            move_type = MovingType.FIRE
+        return Moving(move_type, move)
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
@@ -179,10 +197,10 @@ class GameParameters:
         rect.move_ip(200, 100)
         display.blit(points, rect)
 
-def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
+def ship_fire(param_game, obj_game, objs_aliens, objs_ship, is_fire):
     if param_game.allow_fire:
         param_game.allow_fire = False
-        if pygame.key.get_pressed()[pygame.K_SPACE]:
+        if is_fire:
             missile_position = pygame.Vector2(objs_ship.ship.rect.midtop)
             bullet = obj_game.Missile(param_game.game_board.screen,
                                           missile_position,
@@ -194,12 +212,14 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship):
 def main_in_loop(display, time_struct, ship_objects, aliens_objects,
                  parameters_game):
     step = game_parameters.event_catch()
-    ship_fire(game_parameters, game_objects, aliens_objects, ship_objects)
+    fire = step.type == MovingType.FIRE
+    ship_fire(game_parameters, game_objects, aliens_objects, ship_objects, fire)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
-              display)
+              display, game_parameters.game_board.screen_fields)
     for obj in aliens_objects.aliens | aliens_objects.bombs:
         obj.move()
-    ship_objects.ship.move(step)
+
+    ship_objects.ship.move(step.move if step.type == MovingType.MOVE else 0)
     for bullet in ship_objects.bullets:
         is_hit = bullet.move()
         if is_hit:

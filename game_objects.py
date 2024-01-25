@@ -89,13 +89,14 @@ class Missile():
 class Bomb():
     current_frame = pygame.image.load(
             Path(path.abspath('images')).joinpath('missile.png'))
-    def __init__(self, screen, alien, ship):
+    def __init__(self, screen, alien, ship, screen_fields):
         self.rect = self.current_frame.get_rect()
         self.rect.move_ip(alien.rect.midbottom)
         self.visible = False
         self.speed = pygame.Vector2(0, 3)
         self.ship = ship
         self.screen = screen
+        self.screen_fields = screen_fields
 
     def move(self):
         self.rect.move_ip(self.speed)
@@ -115,7 +116,8 @@ class Bomb():
 
     def draw(self):
         if self.visible:
-            self.screen.blit(self.current_frame, self.rect)
+            self.screen.blit(self.current_frame,
+                             self.rect.move(self.screen_fields.playfield.topleft))
 
 
 
