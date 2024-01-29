@@ -133,6 +133,8 @@ class GameParameters:
         self.game_board = game_board
         self._draw_background()
         self._posx = game_board.screen_fields.joyfield.center[0]
+        self._finger_down = False
+        self._used_space = False
 
     def _draw_background(self):
         rect_screen = self.game_board.screen.get_rect()
@@ -159,7 +161,7 @@ class GameParameters:
 
 
     def event_catch(self):
-        move_type = MovingType.MOVE
+        move_type = set()
         move = 0
         EPS = 3
         scale_x = self.game_board.screen.get_width()
@@ -170,10 +172,13 @@ class GameParameters:
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
             elif event.type == pygame.FINGERDOWN:
-                move_type = MovingType.FIRE
+                print(event)
+                self._finger_down = True
+            elif event.type == pygame.FINGERUP:
+                self._finger_down = False
             elif event.type == pygame.FINGERMOTION:
                 print(event)
-                move_type = MovingType.MOVE
+                move_type.add(MovingType.MOVE)
                 self._posx = event.x * scale_x
         if self._posx - center > EPS + 2:
             move = 1
@@ -182,12 +187,19 @@ class GameParameters:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             move = -1
-            move_type = MovingType.MOVE
+            move_type.add(MovingType.MOVE)
         if keys[pygame.K_RIGHT]:
             move = 1
-            move_type = MovingType.MOVE
+            move_type.add(MovingType.MOVE)
         if keys[pygame.K_SPACE]:
-            move_type = MovingType.FIRE
+            self._finger_down = True
+            self._used_space = True
+        else:
+            if self._used_space:
+                self._finger_down = False
+        if self._finger_down:
+            print("hej")
+            move_type.add(MovingType.FIRE)
         return Moving(move_type, move)
 
     def show_point(self, display):
@@ -212,14 +224,14 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship, is_fire):
 def main_in_loop(display, time_struct, ship_objects, aliens_objects,
                  parameters_game):
     step = game_parameters.event_catch()
-    fire = step.type == MovingType.FIRE
+    fire = MovingType.FIRE in step.type
     ship_fire(game_parameters, game_objects, aliens_objects, ship_objects, fire)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
               display, game_parameters.game_board.screen_fields)
     for obj in aliens_objects.aliens | aliens_objects.bombs:
         obj.move()
 
-    ship_objects.ship.move(step.move if step.type == MovingType.MOVE else 0)
+    ship_objects.ship.move(step.move if MovingType.MOVE in step.type else 0)
     for bullet in ship_objects.bullets:
         is_hit = bullet.move()
         if is_hit:
