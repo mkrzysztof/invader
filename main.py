@@ -1,4 +1,4 @@
-from collections import namedtuple
+from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from os import path
@@ -9,15 +9,16 @@ import game_objects
 import board
 import screen_field
 
-Position = namedtuple('Position', ['x', 'y'])
-
 
 class MovingType(Enum):
     MOVE = auto()
     FIRE = auto()
 
 
-Moving = namedtuple('Moving', ['type', 'move'])
+@dataclass
+class Moving:
+    type: ...
+    move: ...
 
 
 MAX_FPS = 100
@@ -45,7 +46,7 @@ def bomb_fall(aliens, bombs, ship, display, screen_fields):
             bombs.add(bomb)
 
 def show_lives(n, display):
-    POS = Position(x=50, y=50)
+    POS = pygame.Vector2(50, 50)
     SPACE = 20
     pth = Path(path.abspath('images'))
     ship_path = pth.joinpath('ship_straight.png')
@@ -131,10 +132,18 @@ class GameParameters:
         self.right_rect = None
         self.background = None
         self.game_board = game_board
-        self._draw_background()
         self._posx = game_board.screen_fields.joyfield.center[0]
         self._finger_down = False
         self._used_space = False
+        self._joyfield = game_board.screen_fields.joyfield
+        self._firefield = game_board.screen_fields.firefield
+        self._motion_finger_id = -1
+        self._fire_finger_id = -1
+        self._move = 0
+        self._finger_on_joy = False
+        self._scale_x = self.game_board.screen.get_width()
+        self._center_joyfield_x = self.game_board.screen_fields.joyfield.center[0]
+        self._draw_background()
 
     def _draw_background(self):
         rect_screen = self.game_board.screen.get_rect()
@@ -151,21 +160,18 @@ class GameParameters:
         size = (20, 20)
         self.left_rect = pygame.Rect(pos_left_rect, size)
         self.right_rect = pygame.Rect(pos_right_rect, size)
-        gfxdraw.box(self.background, self.game_board.screen_fields.joyfield,
+        gfxdraw.box(self.background, self._joyfield,
                     pygame.Color('blue'))
-        gfxdraw.box(self.background, self.game_board.screen_fields.firefield,
+        gfxdraw.box(self.background, self._firefield,
                     pygame.Color('blue'))
         gfxdraw.filled_circle(self.background,
-                              *self.game_board.screen_fields.joyfield.center,
+                              *self._joyfield.center,
                               3, pygame.Color('gold'))
-
 
     def event_catch(self):
         move_type = set()
-        move = 0
-        EPS = 3
-        scale_x = self.game_board.screen.get_width()
-        center = self.game_board.screen_fields.joyfield.center[0]
+        EPS = 12
+        on_joyfield = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -173,23 +179,39 @@ class GameParameters:
                 self.allow_fire = True
             elif event.type == pygame.FINGERDOWN:
                 print(event)
-                self._finger_down = True
+                finger_pos = event.x * self._scale_x
+                if self._firefield.left < finger_pos < self._firefield.right:
+                    self._finger_down = True
             elif event.type == pygame.FINGERUP:
-                self._finger_down = False
-            elif event.type == pygame.FINGERMOTION:
                 print(event)
-                move_type.add(MovingType.MOVE)
-                self._posx = event.x * scale_x
-        if self._posx - center > EPS + 2:
-            move = 1
-        elif self._posx - center < -EPS - 2:
-            move = -1
+                if event.finger_id == self._motion_finger_id:
+                    print('Hej')
+                    self._move = 0
+                    self._finger_on_joy = False
+                else:
+                    self._finger_down = False
+            elif event.type == pygame.FINGERMOTION:
+                # print(event)
+                self._posx = event.x * self._scale_x
+                if self._joyfield.left  < self._posx < self._joyfield.right:
+                    on_joyfield = True
+                    self._finger_on_joy = True
+                else:
+                    on_joyfield = False
+                if self._finger_on_joy:
+                    move_type.add(MovingType.MOVE)
+                    self._motion_finger_id = event.finger_id
+        direction = self._posx - self._center_joyfield_x
+        if direction > EPS and on_joyfield:
+            self._move = 1
+        elif direction < -EPS and on_joyfield:
+            self._move = -1
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            move = -1
+            self._move = -1
             move_type.add(MovingType.MOVE)
         if keys[pygame.K_RIGHT]:
-            move = 1
+            self._move = 1
             move_type.add(MovingType.MOVE)
         if keys[pygame.K_SPACE]:
             self._finger_down = True
@@ -198,9 +220,11 @@ class GameParameters:
             if self._used_space:
                 self._finger_down = False
         if self._finger_down:
-            print("hej")
             move_type.add(MovingType.FIRE)
-        return Moving(move_type, move)
+        else:
+            move_type.discard(MovingType.FIRE)
+        # print(f'move_type = {move_type}; _move = {self._move}')
+        return Moving(move_type, self._move)
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
