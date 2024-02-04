@@ -139,7 +139,8 @@ class GameParameters:
         self._firefield = game_board.screen_fields.firefield
         self._motion_finger_id = -1
         self._fire_finger_id = -1
-        self._move = 0
+        self.move = 0
+        self.fire = False
         self._finger_on_joy = False
         self._scale_x = self.game_board.screen.get_width()
         self._center_joyfield_x = self.game_board.screen_fields.joyfield.center[0]
@@ -169,62 +170,53 @@ class GameParameters:
                               3, pygame.Color('gold'))
 
     def event_catch(self):
-        move_type = set()
-        EPS = 12
-        on_joyfield = False
+        def signum(x):
+            ret_value = 0
+            if x > 0:
+                ret_value = 1
+            elif x < 0:
+                ret_value = -1
+            return ret_value
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
+            if event.type in {pygame.FINGERMOTION, pygame.FINGERDOWN}:
+                print('motion')
+                position = event.x * self._scale_x
+                if self._joyfield.left <= position <= self._joyfield.right:
+                    print('in joyfield')
+                    if self._motion_finger_id == event.finger_id:
+                        dx = position - self._center_joyfield_x
+                        self.move = signum(dx)
+                    elif self._motion_finger_id == -1:
+                        self._motion_finger_id = event.finger_id
+                        dx = position - self._center_joyfield_x
+                        self.move = signum(dx)
+                elif self._firefield.left <= position <= self._firefield.right:
+                    if self._fire_finger_id == event.finger_id:
+                        self.fire = True
+                    elif self._fire_finger_id == -1:
+                        self._fire_finger_id = event.finger_id
+                        self.fire = True
+            elif event.type == pygame.FINGERUP:
+                if event.finger_id == self._motion_finger_id:
+                    self.move = 0
+                    self._motion_finger_id = -1
+                elif event.finger_id == self._fire_finger_id:
+                    self.fire = False
+                    self._fire_finger_id = -1
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
-            elif event.type == pygame.FINGERDOWN:
-                print(event)
-                finger_pos = event.x * self._scale_x
-                if self._firefield.left < finger_pos < self._firefield.right:
-                    self._finger_down = True
-            elif event.type == pygame.FINGERUP:
-                print(event)
-                if event.finger_id == self._motion_finger_id:
-                    print('Hej')
-                    self._move = 0
-                    self._finger_on_joy = False
-                else:
-                    self._finger_down = False
-            elif event.type == pygame.FINGERMOTION:
-                # print(event)
-                self._posx = event.x * self._scale_x
-                if self._joyfield.left  < self._posx < self._joyfield.right:
-                    on_joyfield = True
-                    self._finger_on_joy = True
-                else:
-                    on_joyfield = False
-                if self._finger_on_joy:
-                    move_type.add(MovingType.MOVE)
-                    self._motion_finger_id = event.finger_id
-        direction = self._posx - self._center_joyfield_x
-        if direction > EPS and on_joyfield:
-            self._move = 1
-        elif direction < -EPS and on_joyfield:
-            self._move = -1
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self._move = -1
-            move_type.add(MovingType.MOVE)
-        if keys[pygame.K_RIGHT]:
-            self._move = 1
-            move_type.add(MovingType.MOVE)
-        if keys[pygame.K_SPACE]:
-            self._finger_down = True
-            self._used_space = True
-        else:
-            if self._used_space:
-                self._finger_down = False
-        if self._finger_down:
-            move_type.add(MovingType.FIRE)
-        else:
-            move_type.discard(MovingType.FIRE)
-        # print(f'move_type = {move_type}; _move = {self._move}')
-        return Moving(move_type, self._move)
+        # keys=pygame.key.get_pressed()
+        # if keys[pygame.K_LEFT]:
+        #     self.move = -1
+        # elif keys[pygame.K_RIGHT]:
+        #     self.move = 1
+        # else:
+        #     self.move = 0
+        # if keys[pygame.K_SPACE]:
+        #     self.fire = True
+        # else:
+        #     self.fire=False
+        print(f'self.move={self.move}')
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
@@ -247,15 +239,14 @@ def ship_fire(param_game, obj_game, objs_aliens, objs_ship, is_fire):
 
 def main_in_loop(display, time_struct, ship_objects, aliens_objects,
                  parameters_game):
-    step = game_parameters.event_catch()
-    fire = MovingType.FIRE in step.type
-    ship_fire(game_parameters, game_objects, aliens_objects, ship_objects, fire)
+    game_parameters.event_catch()
+    ship_fire(game_parameters, game_objects, aliens_objects, ship_objects, game_parameters.fire)
     bomb_fall(aliens_objects.aliens, aliens_objects.bombs, ship_objects.ship,
               display, game_parameters.game_board.screen_fields)
     for obj in aliens_objects.aliens | aliens_objects.bombs:
         obj.move()
 
-    ship_objects.ship.move(step.move if MovingType.MOVE in step.type else 0)
+    ship_objects.ship.move(game_parameters.move)
     for bullet in ship_objects.bullets:
         is_hit = bullet.move()
         if is_hit:
