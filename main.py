@@ -7,7 +7,6 @@ import pygame
 from pygame import gfxdraw
 import game_objects
 import board
-import screen_field
 
 
 class MovingType(Enum):
@@ -45,9 +44,9 @@ def bomb_fall(aliens, bombs, ship, display, screen_fields):
             bomb.fire()
             bombs.add(bomb)
 
+POS = pygame.Vector2(50, 50)
+SPACE = 20
 def show_lives(n, display):
-    POS = pygame.Vector2(50, 50)
-    SPACE = 20
     pth = Path(path.abspath('images'))
     ship_path = pth.joinpath('ship_straight.png')
     img_ship = pygame.image.load(ship_path)
@@ -89,6 +88,11 @@ def gameover_page(display):
         pygame.event.clear()
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             running = False
+        poll = pygame.event.poll()
+        if poll.type in {pygame.FINGERMOTION, pygame.FINGERDOWN}:
+            running = False
+        if not running:
+            pygame.event.clear()
     pygame.time.delay(500)
 
 
@@ -139,11 +143,14 @@ class GameParameters:
         self._firefield = game_board.screen_fields.firefield
         self._motion_finger_id = -1
         self._fire_finger_id = -1
+        self._k_left_down = False
+        self._k_right_down = False
+        self._use_keys = set()
+        self._play_on_key = False
         self.move = 0
         self.fire = False
         self._finger_on_joy = False
         self._scale_x = self.game_board.screen.get_width()
-        self._center_joyfield_x = self.game_board.screen_fields.joyfield.center[0]
         self._draw_background()
 
     def _draw_background(self):
@@ -169,7 +176,7 @@ class GameParameters:
                               *self._joyfield.center,
                               3, pygame.Color('gold'))
 
-    def event_catch(self):
+    def _moving(self, pos):
         def signum(x):
             ret_value = 0
             if x > 0:
@@ -177,25 +184,41 @@ class GameParameters:
             elif x < 0:
                 ret_value = -1
             return ret_value
+        dx = pos - self.game_board.screen_fields.joyfield.center[0]
+        self.move = signum(dx)
+
+    def _keyboard_control(self):
+        if pygame.K_RIGHT in self._use_keys:
+            self.move = 1
+        elif pygame.K_LEFT in self._use_keys:
+            self.move = -1
+        else:
+            self.move = 0
+        if pygame.K_SPACE in self._use_keys:
+            self.fire = True
+        else:
+            self.fire = False
+        self._play_on_key = bool(self._use_keys)
+
+    def _touch_move(self, event):
+        position = event.x * self._scale_x
+        if self._joyfield.collidepoint(position, 0):
+            if self._motion_finger_id == event.finger_id:
+                self._moving(position)
+            elif self._motion_finger_id == -1:
+                self._moving(position)
+                self._motion_finger_id = event.finger_id
+        elif self._firefield.collidepoint(position, 0):
+            if self._fire_finger_id == event.finger_id:
+                self.fire = True
+            elif self._fire_finger_id == -1:
+                self._fire_finger_id = event.finger_id
+                self.fire = True
+
+    def event_catch(self):
         for event in pygame.event.get():
             if event.type in {pygame.FINGERMOTION, pygame.FINGERDOWN}:
-                print('motion')
-                position = event.x * self._scale_x
-                if self._joyfield.left <= position <= self._joyfield.right:
-                    print('in joyfield')
-                    if self._motion_finger_id == event.finger_id:
-                        dx = position - self._center_joyfield_x
-                        self.move = signum(dx)
-                    elif self._motion_finger_id == -1:
-                        self._motion_finger_id = event.finger_id
-                        dx = position - self._center_joyfield_x
-                        self.move = signum(dx)
-                elif self._firefield.left <= position <= self._firefield.right:
-                    if self._fire_finger_id == event.finger_id:
-                        self.fire = True
-                    elif self._fire_finger_id == -1:
-                        self._fire_finger_id = event.finger_id
-                        self.fire = True
+                self._touch_move(event)
             elif event.type == pygame.FINGERUP:
                 if event.finger_id == self._motion_finger_id:
                     self.move = 0
@@ -205,18 +228,19 @@ class GameParameters:
                     self._fire_finger_id = -1
             elif event.type == ALLOWFIRE:
                 self.allow_fire = True
-        # keys=pygame.key.get_pressed()
-        # if keys[pygame.K_LEFT]:
-        #     self.move = -1
-        # elif keys[pygame.K_RIGHT]:
-        #     self.move = 1
-        # else:
-        #     self.move = 0
-        # if keys[pygame.K_SPACE]:
-        #     self.fire = True
-        # else:
-        #     self.fire=False
-        print(f'self.move={self.move}')
+            elif event.type == pygame.KEYDOWN:
+                if event.key in {pygame.K_RIGHT,
+                                 pygame.K_LEFT,
+                                 pygame.K_SPACE}:
+                    self._play_on_key = True
+                    self._use_keys.add(event.key)
+            elif event.type == pygame.KEYUP:
+                if event.key in {pygame.K_RIGHT,
+                                 pygame.K_LEFT,
+                                 pygame.K_SPACE}:
+                    self._use_keys.discard(event.key)
+            if self._play_on_key:
+                self._keyboard_control()
 
     def show_point(self, display):
         font = pygame.font.SysFont('', 20)
@@ -304,10 +328,10 @@ if __name__ == '__main__':
                 main_in_loop(gb.screen, timer, ship_items,
                              aliens_atack,
                              game_parameters)
-                # if game_parameters.live_numb <= 0:
-                #     game_parameters.running = False
+                if game_parameters.live_numb <= 0:
+                    game_parameters.running = False
                 if not aliens_atack.aliens:
-                    board_numb = + 1
+                    board_numb += 1
                     break
                 if not game_parameters.running:
                     gameover_page(gb.screen)
